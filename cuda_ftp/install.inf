@@ -1,0 +1,15 @@
+[info]
+title=Ftp
+desc=Remote file edit
+type=cudatext-plugin
+subdir=cuda_ftp
+homepage=
+
+[item1]
+section=commands
+caption=Ftp
+method=toggle
+
+[item2]
+section=events
+events=on_start,on_save,on_panel
