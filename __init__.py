@@ -328,15 +328,16 @@ class Command:
 
         server, server_path, client_path = self.get_location_by_index(
             self.selected)
-        name, *_ = dlg_input_ex(
+        file_info = dlg_input_ex(
             1,
             "FTP new file",
             "Filename:", "",
         )
-        if not name:
+        if not file_info:
 
             return
 
+        name = file_info[0]
         try:
 
             client_path.mkdir(parents=True)
@@ -369,15 +370,16 @@ class Command:
 
         server, server_path, client_path = self.get_location_by_index(
             self.selected)
-        name, *_ = dlg_input_ex(
+        dir_info = dlg_input_ex(
             1,
             "FTP new directory",
             "Directory name:", "",
         )
-        if not name:
+        if not dir_info:
 
             return
 
+        name = dir_info[0]
         with FTPClient(server) as client:
 
             client.login(server.login, server.password)
