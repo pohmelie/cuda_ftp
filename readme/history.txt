@@ -1,0 +1,6 @@
+
+2016.05.nn
++ support for Win32 [Py3.3]
+
+2016.05.25
+init version
