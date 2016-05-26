@@ -92,10 +92,9 @@ class Command:
 
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = pathlib.Path(self.temp_dir.name)
-        
 
     def init_panel(self):
-    
+
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
         app_proc(PROC_SIDEPANEL_ADD, self.title + ",-1,tree")
 
@@ -105,6 +104,7 @@ class Command:
     def toggle(self, visible=True):
 
         if visible:
+
             app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
 
         base = pathlib.Path(__file__).parent
