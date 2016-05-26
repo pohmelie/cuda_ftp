@@ -74,6 +74,25 @@ class Command:
         ),
     }
 
+    def __init__(self):
+
+        self.toggle(False)
+        self.options = {"servers": []}
+        settings_dir = pathlib.Path(app_path(APP_DIR_SETTINGS))
+        self.options_filename = settings_dir / "cuda_ftp.json"
+        if self.options_filename.exists():
+
+            with self.options_filename.open() as fin:
+
+                self.options = json.load(fin)
+
+        for server in itertools.starmap(Server, self.options["servers"]):
+
+            self.action_new_server(server)
+
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.temp_dir_path = pathlib.Path(self.temp_dir.name)
+
     def toggle(self, visible=True):
 
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
@@ -244,25 +263,6 @@ class Command:
             )
 
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, node_index)
-
-    def on_start(self, ed_self):
-
-        self.toggle(False)
-        self.options = {"servers": []}
-        settings_dir = pathlib.Path(app_path(APP_DIR_SETTINGS))
-        self.options_filename = settings_dir / "cuda_ftp.json"
-        if self.options_filename.exists():
-
-            with self.options_filename.open() as fin:
-
-                self.options = json.load(fin)
-
-        for server in itertools.starmap(Server, self.options["servers"]):
-
-            self.action_new_server(server)
-
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.temp_dir_path = pathlib.Path(self.temp_dir.name)
 
     def on_save(self, ed_self):
 
