@@ -312,7 +312,7 @@ class Command:
         server, *_ = self.get_location_by_index(self.selected)
         tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
         servers = self.options["servers"]
-        servers.pop(servers.index(list(ftp)))
+        servers.pop(servers.index(list(server)))
         self.save_options()
 
     def refresh_node(self, index):
