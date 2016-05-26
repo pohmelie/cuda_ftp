@@ -12,4 +12,4 @@ method=toggle
 
 [item2]
 section=events
-events=on_start,on_save,on_panel
+events=on_save,on_panel
