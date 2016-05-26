@@ -32,10 +32,10 @@ NODE_DIR = 1
 NODE_FILE = 2
 
 icon_names = {
-  NODE_SERVER: "cuda-ftp-icon-server.png",
-  NODE_DIR: "cuda-ftp-icon-directory.png",
-  NODE_FILE: "cuda-ftp-icon-file.png",
-  }
+    NODE_SERVER: "cuda-ftp-icon-server.png",
+    NODE_DIR: "cuda-ftp-icon-directory.png",
+    NODE_FILE: "cuda-ftp-icon-file.png",
+}
 
 
 NodeInfo = collections.namedtuple("NodeInfo", "caption index image level")
@@ -86,10 +86,9 @@ class Command:
 
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = pathlib.Path(self.temp_dir.name)
-        
 
     def init_panel(self):
-    
+
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
         app_proc(PROC_SIDEPANEL_ADD, self.title + ",-1,tree")
 
