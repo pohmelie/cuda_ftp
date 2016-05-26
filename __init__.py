@@ -3,7 +3,6 @@ import contextlib
 import pathlib
 import json
 import tempfile
-import enum
 import itertools
 from ftplib import FTP, error_perm
 
@@ -28,20 +27,15 @@ def FTPClient(server):
     client.quit()
 
 
-class Node(enum.IntEnum):
+NODE_SERVER = 0
+NODE_DIR = 1
+NODE_FILE = 2
 
-    SERVER = 0
-    DIRECTORY = 1
-    FILE = 2
-
-    def __init__(self, index):
-
-        filenames = (
-            "cuda-ftp-icon-server.png",
-            "cuda-ftp-icon-directory.png",
-            "cuda-ftp-icon-file.png",
-        )
-        self.filename = pathlib.Path(filenames[index])
+icon_names = {
+  NODE_SERVER: "cuda-ftp-icon-server.png",
+  NODE_DIR: "cuda-ftp-icon-directory.png",
+  NODE_FILE: "cuda-ftp-icon-file.png",
+  }
 
 
 NodeInfo = collections.namedtuple("NodeInfo", "caption index image level")
@@ -55,20 +49,20 @@ class Command:
         None: (
             "New server",
         ),
-        Node.SERVER: (
+        NODE_SERVER: (
             "New server",
             "Remove server",
             "New file",
             "New dir",
             "Refresh",
         ),
-        Node.DIRECTORY: (
+        NODE_DIR: (
             "New file",
             "New dir",
             "Remove dir",
             "Refresh",
         ),
-        Node.FILE: (
+        NODE_FILE: (
             "Open file",
             "Remove file",
         ),
@@ -92,9 +86,10 @@ class Command:
 
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = pathlib.Path(self.temp_dir.name)
+        
 
     def init_panel(self):
-
+    
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
         app_proc(PROC_SIDEPANEL_ADD, self.title + ",-1,tree")
 
@@ -104,13 +99,12 @@ class Command:
     def toggle(self, visible=True):
 
         if visible:
-
             app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
 
         base = pathlib.Path(__file__).parent
-        for node in Node:
+        for n in (NODE_SERVER, NODE_DIR, NODE_FILE):
 
-            path = base / node.filename
+            path = base / icon_names[n]
             tree_proc(self.tree, TREE_ICON_ADD, 0, 0, str(path))
 
         self.generate_context_menu()
@@ -200,7 +194,7 @@ class Command:
     def get_location_by_index(self, index):
 
         path = []
-        while not self.get_info(index).image == Node.SERVER:
+        while not self.get_info(index).image == NODE_SERVER:
 
             path.append(self.get_info(index).caption)
             index = tree_proc(self.tree, TREE_ITEM_GET_PARENT, index)
@@ -245,11 +239,11 @@ class Command:
 
             if facts["type"] == "dir":
 
-                NodeType = Node.DIRECTORY
+                NodeType = NODE_DIR
 
             elif facts["type"] == "file":
 
-                NodeType = Node.FILE
+                NodeType = NODE_FILE
 
             else:
 
@@ -292,11 +286,11 @@ class Command:
         elif id_event == "on_dbl_click":
 
             info = self.get_info(self.selected)
-            if info.image in (Node.SERVER, Node.DIRECTORY):
+            if info.image in (NODE_SERVER, NODE_DIR):
 
                 self.action_refresh()
 
-            elif info.image == Node.FILE:
+            elif info.image == NODE_FILE:
 
                 self.action_open_file()
 
