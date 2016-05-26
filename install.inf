@@ -8,7 +8,7 @@ homepage=https://github.com/pohmelie/cuda_ftp
 [item1]
 section=commands
 caption=FTP
-method=toggle
+method=show_panel
 
 [item2]
 section=events

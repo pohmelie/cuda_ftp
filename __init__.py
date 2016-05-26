@@ -44,7 +44,8 @@ Server = collections.namedtuple("Server", "address login password")
 
 class Command:
 
-    title = "Ftp"
+    inited = False
+    title = "FTP"
     actions = {
         None: (
             "New server",
@@ -68,9 +69,8 @@ class Command:
         ),
     }
 
-    def __init__(self):
+    def init_options(self):
 
-        self.init_panel()
         self.options = {"servers": []}
         settings_dir = Path(app_path(APP_DIR_SETTINGS))
         self.options_filename = settings_dir / "cuda_ftp.json"
@@ -95,8 +95,12 @@ class Command:
         self.tree = app_proc(PROC_SIDEPANEL_GET_CONTROL, self.title)
         tree_proc(self.tree, TREE_ITEM_DELETE, 0)
 
-    def toggle(self, visible=True):
+    def show_panel(self, visible=True):
 
+        self.inited = True
+        self.init_panel()
+        self.init_options()
+        
         if visible:
             app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
 
@@ -261,6 +265,7 @@ class Command:
 
     def on_save(self, ed_self):
 
+        if not self.inited: return
         filename = ed_self.get_filename()
         try:
 
@@ -274,6 +279,7 @@ class Command:
 
     def on_panel(self, ed_self, id_control, id_event):
 
+        if not self.inited: return
         if id_control != self.tree:
 
             return
