@@ -1,10 +1,10 @@
 import collections
 import contextlib
-import pathlib
 import json
 import tempfile
 import itertools
 from ftplib import FTP, error_perm
+from .pathlib import Path, PurePosixPath
 
 from cudatext import *
 import cudatext_cmd
@@ -72,7 +72,7 @@ class Command:
 
         self.init_panel()
         self.options = {"servers": []}
-        settings_dir = pathlib.Path(app_path(APP_DIR_SETTINGS))
+        settings_dir = Path(app_path(APP_DIR_SETTINGS))
         self.options_filename = settings_dir / "cuda_ftp.json"
         if self.options_filename.exists():
 
@@ -85,7 +85,7 @@ class Command:
             self.action_new_server(server)
 
         self.temp_dir = tempfile.TemporaryDirectory()
-        self.temp_dir_path = pathlib.Path(self.temp_dir.name)
+        self.temp_dir_path = Path(self.temp_dir.name)
 
     def init_panel(self):
 
@@ -100,7 +100,7 @@ class Command:
         if visible:
             app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
 
-        base = pathlib.Path(__file__).parent
+        base = Path(__file__).parent
         for n in (NODE_SERVER, NODE_DIR, NODE_FILE):
 
             path = base / icon_names[n]
@@ -199,7 +199,7 @@ class Command:
             index = tree_proc(self.tree, TREE_ITEM_GET_PARENT, index)
 
         path.reverse()
-        server_path = pathlib.PurePosixPath("/" + str.join("/", path))
+        server_path = PurePosixPath("/" + str.join("/", path))
 
         short_info = str.split(self.get_info(index).caption, "@")
         server = self.get_server_by_short_info(*short_info)
@@ -209,11 +209,11 @@ class Command:
 
     def get_location_by_filename(self, filename):
 
-        client_path = pathlib.Path(filename)
+        client_path = Path(filename)
         path = client_path.relative_to(self.temp_dir_path)
         server = self.get_server_by_short_info(*path.parts[:2])
-        virtual = pathlib.PurePosixPath(server.address) / server.login
-        server_path = pathlib.PurePosixPath("/") / path.relative_to(virtual)
+        virtual = PurePosixPath(server.address) / server.login
+        server_path = PurePosixPath("/") / path.relative_to(virtual)
         return server, server_path, client_path
 
     def node_remove_children(self, node_index):
@@ -264,7 +264,7 @@ class Command:
         filename = ed_self.get_filename()
         try:
 
-            pathlib.Path(filename).relative_to(self.temp_dir_path)
+            Path(filename).relative_to(self.temp_dir_path)
 
         except ValueError:
 
