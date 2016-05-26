@@ -266,7 +266,16 @@ class Command:
 
     def on_save(self, ed_self):
 
-        self.store_file(*self.get_location_by_filename(ed_self.get_filename()))
+        filename = ed_self.get_filename()
+        try:
+
+            pathlib.Path(filename).relative_to(self.temp_dir_path)
+
+        except ValueError:
+
+            return
+
+        self.store_file(*self.get_location_by_filename(filename))
 
     def on_panel(self, ed_self, id_control, id_event):
 
