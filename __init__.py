@@ -270,6 +270,10 @@ class Command:
 
     def on_panel(self, ed_self, id_control, id_event):
 
+        if id_control != self.tree:
+
+            return
+
         if id_event == "on_sel":
 
             self.generate_context_menu()
