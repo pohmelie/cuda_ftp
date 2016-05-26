@@ -1,13 +1,13 @@
 [info]
-title=Ftp
-desc=Remote file edit
+title=FTP
+desc=Allows to open/save/remove/etc files/folders on FTP servers
 type=cudatext-plugin
 subdir=cuda_ftp
-homepage=
+homepage=https://github.com/pohmelie/cuda_ftp
 
 [item1]
 section=commands
-caption=Ftp
+caption=FTP
 method=toggle
 
 [item2]
