@@ -76,7 +76,7 @@ class Command:
 
     def __init__(self):
 
-        self.toggle(False)
+        self.init_panel()
         self.options = {"servers": []}
         settings_dir = pathlib.Path(app_path(APP_DIR_SETTINGS))
         self.options_filename = settings_dir / "cuda_ftp.json"
@@ -92,18 +92,20 @@ class Command:
 
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = pathlib.Path(self.temp_dir.name)
+        
 
-    def toggle(self, visible=True):
-
+    def init_panel(self):
+    
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
         app_proc(PROC_SIDEPANEL_ADD, self.title + ",-1,tree")
 
-        if visible:
-
-            app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
-
         self.tree = app_proc(PROC_SIDEPANEL_GET_CONTROL, self.title)
         tree_proc(self.tree, TREE_ITEM_DELETE, 0)
+
+    def toggle(self, visible=True):
+
+        if visible:
+            app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
 
         base = pathlib.Path(__file__).parent
         for node in Node:
