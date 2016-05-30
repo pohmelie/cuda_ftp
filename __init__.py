@@ -52,6 +52,7 @@ class Command:
         ),
         NODE_SERVER: (
             "New server",
+            "Edit server",
             "Remove server",
             "New file",
             "New dir",
@@ -100,7 +101,7 @@ class Command:
         self.inited = True
         self.init_panel()
         self.init_options()
-        
+
         if visible:
             app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
 
@@ -265,7 +266,10 @@ class Command:
 
     def on_save(self, ed_self):
 
-        if not self.inited: return
+        if not self.inited:
+
+            return
+
         filename = ed_self.get_filename()
         try:
 
@@ -279,8 +283,7 @@ class Command:
 
     def on_panel(self, ed_self, id_control, id_event):
 
-        if not self.inited: return
-        if id_control != self.tree:
+        if not self.inited or id_control != self.tree:
 
             return
 
@@ -299,17 +302,21 @@ class Command:
 
                 self.action_open_file()
 
+    def get_server_info(self, address="", login="anonymous", password="anon@"):
+
+        return dlg_input_ex(
+            3,
+            "FTP server info",
+            "Address:", address,
+            "Login:", login,
+            "Password:", password,
+        )
+
     def action_new_server(self, server=None):
 
         if server is None:
 
-            server_info = dlg_input_ex(
-                3,
-                "FTP server info",
-                "Address:", "",
-                "Login:", "anonymous",
-                "Password:", "anon@",
-            )
+            server_info = self.get_server_info()
             if server_info is None:
 
                 return
@@ -320,6 +327,22 @@ class Command:
 
         caption = str.format("{}@{}", server.address, server.login)
         tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, caption, 0)
+
+    def action_edit_server(self):
+
+        server, *_ = self.get_location_by_index(self.selected)
+        server_info = self.get_server_info(*server)
+        if server_info is None:
+
+            return
+
+        servers = self.options["servers"]
+        i = servers.index(list(server))
+        servers[i] = server_info
+        server = Server(*server_info)
+        caption = str.format("{}@{}", server.address, server.login)
+        tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
+        self.save_options()
 
     def action_remove_server(self):
 
