@@ -5,6 +5,7 @@ import tempfile
 import itertools
 from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
+from datetime import datetime
 
 from cudatext import *
 import cudatext_cmd
@@ -34,6 +35,15 @@ def FTPClient(server):
     yield client
     client.quit()
 
+
+def show_log(str1, str2):
+    time_fmt = '[%H:%M] '
+    time_str = datetime.now().strftime(time_fmt)
+    ed.cmd(cudatext_cmd.cmd_ShowPanelOutput)
+    app_log(LOG_SET_PANEL, LOG_PANEL_OUTPUT)
+    app_log(LOG_ADD, time_str + str1 + ': ' + str2)
+    lines = app_log(LOG_GET_LINES, '').split('\n')
+    app_log(LOG_SET_LINEINDEX, str(len(lines)-1))
 
 NODE_SERVER = 0
 NODE_DIR = 1
@@ -168,7 +178,11 @@ class Command:
 
             with client_path.open(mode="rb") as fin:
 
-                client.storbinary("STOR " + str(server_path), fin)
+                try:
+                    client.storbinary("STOR " + str(server_path), fin)
+                except Exception as ex:
+                    show_log('Upload file', str(ex))
+                    
 
     def retrieve_file(self, server, server_path, client_path):
 
@@ -185,7 +199,10 @@ class Command:
             client.login(server_login(server), server_password(server))
             with client_path.open(mode="wb") as fout:
 
-                client.retrbinary("RETR " + str(server_path), fout.write)
+                try:    
+                    client.retrbinary("RETR " + str(server_path), fout.write)
+                except Exception as ex:
+                    show_log('Download file', str(ex))
 
     def get_server_by_short_info(self, address, login):
 
@@ -365,7 +382,10 @@ class Command:
     def refresh_node(self, index):
 
         self.node_remove_children(index)
-        self.node_refresh(index)
+        try:
+            self.node_refresh(index)
+        except Exception as ex:
+            show_log('Refresh node', str(ex))
 
     def action_refresh(self):
 
@@ -404,8 +424,11 @@ class Command:
 
         with FTPClient(server) as client:
 
-            client.login(server_login(server), server_password(server))
-            client.delete(str(server_path))
+            try:    
+                client.login(server_login(server), server_password(server))
+                client.delete(str(server_path))
+            except Exception as ex:
+                show_log('Remove file', str(ex))
 
     def action_remove_file(self):
 
@@ -429,24 +452,31 @@ class Command:
         name = dir_info[0]
         with FTPClient(server) as client:
 
-            client.login(server_login(server), server_password(server))
-            client.mkd(str(server_path / name))
+            try:
+                client.login(server_login(server), server_password(server))
+                client.mkd(str(server_path / name))
+            except Exception as ex:
+                show_log('Create dir', str(ex))
 
         self.refresh_node(self.selected)
 
     def remove_directory_recursive(self, client, path):
 
-        for name, facts in tuple(client.mlsd(path)):
+        try:
+            for name, facts in tuple(client.mlsd(path)):
 
-            if facts["type"] == "dir":
+                if facts["type"] == "dir":
 
-                self.remove_directory_recursive(client, path / name)
+                    self.remove_directory_recursive(client, path / name)
 
-            elif facts["type"] == "file":
+                elif facts["type"] == "file":
 
-                client.delete(str(path / name))
+                    client.delete(str(path / name))
 
-        client.rmd(str(path))
+            client.rmd(str(path))
+        except Exception as ex:
+            show_log('Remove dir', str(ex))
+            
 
     def action_remove_dir(self):
 
