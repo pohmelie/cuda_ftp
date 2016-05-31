@@ -10,17 +10,25 @@ from cudatext import *
 import cudatext_cmd
 
 
+def server_address(server):
+    return server.get('address', '')
+def server_login(server):
+    return server.get('login', '')
+def server_password(server):
+    return server.get('password', '')
+
 @contextlib.contextmanager
 def FTPClient(server):
 
     client = FTP()
-    if ":" in server.address:
+    adr = server_address(server)
+    if ":" in adr:
 
-        host, port = str.split(server.address, ":")
+        host, port = str.split(adr, ":")
 
     else:
 
-        host, port = server.address, 0
+        host, port = adr, 0
 
     client.connect(host, int(port))
     yield client
@@ -39,7 +47,6 @@ icon_names = {
 
 
 NodeInfo = collections.namedtuple("NodeInfo", "caption index image level")
-Server = collections.namedtuple("Server", "address login password")
 
 
 class Command:
@@ -75,13 +82,14 @@ class Command:
         self.options = {"servers": []}
         settings_dir = Path(app_path(APP_DIR_SETTINGS))
         self.options_filename = settings_dir / "cuda_ftp.json"
+
         if self.options_filename.exists():
 
             with self.options_filename.open() as fin:
 
                 self.options = json.load(fin)
-
-        for server in itertools.starmap(Server, self.options["servers"]):
+                
+        for server in self.options["servers"]:
 
             self.action_new_server(server)
 
@@ -149,7 +157,7 @@ class Command:
 
         with FTPClient(server) as client:
 
-            client.login(server.login, server.password)
+            client.login(server_login(server), server_password(server))
             try:
 
                 client.mkd(str(server_path.parent))
@@ -174,22 +182,22 @@ class Command:
 
         with FTPClient(server) as client:
 
-            client.login(server.login, server.password)
+            client.login(server_login(server), server_password(server))
             with client_path.open(mode="wb") as fout:
 
                 client.retrbinary("RETR " + str(server_path), fout.write)
 
     def get_server_by_short_info(self, address, login):
 
-        for server in itertools.starmap(Server, self.options["servers"]):
+        for server in self.options["servers"]:
 
-            if (server.address, server.login) == (address, login):
+            if (server_address(server), server_login(server)) == (address, login):
 
                 return server
 
         raise Exception(
             str.format(
-                "Server {}@{} have no full info",
+                "Server {}@{} has no full info",
                 address,
                 login,
             )
@@ -209,7 +217,7 @@ class Command:
         short_info = str.split(self.get_info(index).caption, "@")
         server = self.get_server_by_short_info(*short_info)
         p = server_path.relative_to("/")
-        client_path = self.temp_dir_path / server.address / server.login / p
+        client_path = self.temp_dir_path / server_address(server) / server_login(server) / p
         return server, server_path, client_path
 
     def get_location_by_filename(self, filename):
@@ -217,7 +225,7 @@ class Command:
         client_path = Path(filename)
         path = client_path.relative_to(self.temp_dir_path)
         server = self.get_server_by_short_info(*path.parts[:2])
-        virtual = PurePosixPath(server.address) / server.login
+        virtual = PurePosixPath(server_address(server)) / server_login(server)
         server_path = PurePosixPath("/") / path.relative_to(virtual)
         return server, server_path, client_path
 
@@ -233,7 +241,7 @@ class Command:
         server, server_path, _ = self.get_location_by_index(node_index)
         with FTPClient(server) as client:
 
-            client.login(server.login, server.password)
+            client.login(server_login(server), server_password(server))
             path_list = sorted(
                 client.mlsd(server_path),
                 key=lambda p: (p[1]["type"], p[0])
@@ -302,15 +310,17 @@ class Command:
 
                 self.action_open_file()
 
-    def get_server_info(self, address="", login="anonymous", password="anon@"):
+    def get_server_info(self, init_server=None):
 
-        return dlg_input_ex(
+        res = dlg_input_ex(
             3,
             "FTP server info",
-            "Address:", address,
-            "Login:", login,
-            "Password:", password,
+            "Address (e.g. ftp.site.com:21):", (server_address(init_server) if init_server else ''),
+            "Login:", (server_login(init_server) if init_server else 'anonymous'),
+            "Password:", (server_password(init_server) if init_server else 'user@aol.com'),
         )
+        if res is not None:
+            return dict(zip(("address", "login", "password"), res))
 
     def action_new_server(self, server=None):
 
@@ -323,24 +333,24 @@ class Command:
 
             self.options["servers"].append(server_info)
             self.save_options()
-            server = Server(*server_info)
+            server = server_info
 
-        caption = str.format("{}@{}", server.address, server.login)
+        caption = str.format("{}@{}", server_address(server), server_login(server))
         tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, caption, 0)
 
     def action_edit_server(self):
 
         server, *_ = self.get_location_by_index(self.selected)
-        server_info = self.get_server_info(*server)
+        server_info = self.get_server_info(server)
         if server_info is None:
 
             return
 
         servers = self.options["servers"]
-        i = servers.index(list(server))
+        i = servers.index(server)
         servers[i] = server_info
-        server = Server(*server_info)
-        caption = str.format("{}@{}", server.address, server.login)
+        server = server_info
+        caption = str.format("{}@{}", server_address(server), server_login(server))
         tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
         self.save_options()
 
@@ -349,7 +359,7 @@ class Command:
         server, *_ = self.get_location_by_index(self.selected)
         tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
         servers = self.options["servers"]
-        servers.pop(servers.index(list(server)))
+        servers.pop(servers.index(server))
         self.save_options()
 
     def refresh_node(self, index):
@@ -394,7 +404,7 @@ class Command:
 
         with FTPClient(server) as client:
 
-            client.login(server.login, server.password)
+            client.login(server_login(server), server_password(server))
             client.delete(str(server_path))
 
     def action_remove_file(self):
@@ -419,7 +429,7 @@ class Command:
         name = dir_info[0]
         with FTPClient(server) as client:
 
-            client.login(server.login, server.password)
+            client.login(server_login(server), server_password(server))
             client.mkd(str(server_path / name))
 
         self.refresh_node(self.selected)
@@ -443,7 +453,7 @@ class Command:
         server, server_path, _ = self.get_location_by_index(self.selected)
         with FTPClient(server) as client:
 
-            client.login(server.login, server.password)
+            client.login(server_login(server), server_password(server))
             self.remove_directory_recursive(client, server_path)
 
         tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
@@ -458,4 +468,4 @@ class Command:
 
         with self.options_filename.open(mode="w") as fout:
 
-            json.dump(self.options, fout)
+            fout.write(json.dumps(self.options, indent=2))
