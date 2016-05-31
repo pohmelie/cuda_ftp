@@ -462,31 +462,39 @@ class Command:
 
     def remove_directory_recursive(self, client, path):
 
-        try:
-            for name, facts in tuple(client.mlsd(path)):
+        if app_proc(PROC_GET_ESCAPE, ''):
+            return False
 
-                if facts["type"] == "dir":
+        for name, facts in tuple(client.mlsd(path)):
 
-                    self.remove_directory_recursive(client, path / name)
+            if facts["type"] == "dir":
 
-                elif facts["type"] == "file":
+                msg_status('Removing ftp dir: '+str(path / name), True)
+                self.remove_directory_recursive(client, path / name)
 
-                    client.delete(str(path / name))
+            elif facts["type"] == "file":
 
-            client.rmd(str(path))
-        except Exception as ex:
-            show_log('Remove dir', str(ex))
+                msg_status('Removing ftp file: '+str(path / name), True)
+                client.delete(str(path / name))
+
+        client.rmd(str(path))
             
 
     def action_remove_dir(self):
 
+        app_proc(PROC_SET_ESCAPE, '0')
+
         server, server_path, _ = self.get_location_by_index(self.selected)
         with FTPClient(server) as client:
 
-            client.login(server_login(server), server_password(server))
-            self.remove_directory_recursive(client, server_path)
+            try:
+                client.login(server_login(server), server_password(server))
+                if self.remove_directory_recursive(client, server_path) == False:
+                    return
+                tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
+            except Exception as ex:
+                show_log('Remove dir', str(ex))
 
-        tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
 
     def action_open_file(self):
 
