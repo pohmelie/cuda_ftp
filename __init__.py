@@ -463,7 +463,8 @@ class Command:
     def remove_directory_recursive(self, client, path):
 
         if app_proc(PROC_GET_ESCAPE, ''):
-            return False
+        
+            raise Exception('Removing stopped by user')
 
         for name, facts in tuple(client.mlsd(path)):
 
@@ -477,6 +478,7 @@ class Command:
                 msg_status('Removing ftp file: '+str(path / name), True)
                 client.delete(str(path / name))
 
+        msg_status('Removing ftp dir: '+str(path), True)
         client.rmd(str(path))
             
 
@@ -489,8 +491,7 @@ class Command:
 
             try:
                 client.login(server_login(server), server_password(server))
-                if self.remove_directory_recursive(client, server_path) == False:
-                    return
+                self.remove_directory_recursive(client, server_path)
                 tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
             except Exception as ex:
                 show_log('Remove dir', str(ex))
