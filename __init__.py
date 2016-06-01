@@ -37,10 +37,13 @@ def FTPClient(server):
 
 
 def show_log(str1, str2):
+    title = 'FTP Log'
     time_fmt = '[%H:%M] '
     time_str = datetime.now().strftime(time_fmt)
     ed.cmd(cudatext_cmd.cmd_ShowPanelOutput)
-    app_log(LOG_SET_PANEL, LOG_PANEL_OUTPUT)
+    app_log(LOG_PANEL_ADD, title)
+    app_log(LOG_PANEL_FOCUS, title)
+    app_log(LOG_SET_PANEL, title)
     app_log(LOG_ADD, time_str + str1 + ': ' + str2)
     lines = app_log(LOG_GET_LINES, '').split('\n')
     app_log(LOG_SET_LINEINDEX, str(len(lines)-1))
@@ -165,23 +168,24 @@ class Command:
 
     def store_file(self, server, server_path, client_path):
 
-        with FTPClient(server) as client:
+        try:
+            with FTPClient(server) as client:
 
-            client.login(server_login(server), server_password(server))
-            try:
-
-                client.mkd(str(server_path.parent))
-
-            except error_perm as e:
-
-                pass
-
-            with client_path.open(mode="rb") as fin:
-
+                client.login(server_login(server), server_password(server))
                 try:
+
+                    client.mkd(str(server_path.parent))
+
+                except error_perm as e:
+
+                    pass
+
+                with client_path.open(mode="rb") as fin:
+
                     client.storbinary("STOR " + str(server_path), fin)
-                except Exception as ex:
-                    show_log('Upload file', str(ex))
+                    
+        except Exception as ex:
+            show_log('Upload file', str(ex))
                     
 
     def retrieve_file(self, server, server_path, client_path):
@@ -199,10 +203,7 @@ class Command:
             client.login(server_login(server), server_password(server))
             with client_path.open(mode="wb") as fout:
 
-                try:    
-                    client.retrbinary("RETR " + str(server_path), fout.write)
-                except Exception as ex:
-                    show_log('Download file', str(ex))
+                client.retrbinary("RETR " + str(server_path), fout.write)
 
     def get_server_by_short_info(self, address, login):
 
@@ -256,13 +257,19 @@ class Command:
     def node_refresh(self, node_index):
 
         server, server_path, _ = self.get_location_by_index(node_index)
-        with FTPClient(server) as client:
+        try:
+            with FTPClient(server) as client:
 
-            client.login(server_login(server), server_password(server))
-            path_list = sorted(
-                client.mlsd(server_path),
-                key=lambda p: (p[1]["type"], p[0])
-            )
+                client.login(server_login(server), server_password(server))
+                path_list = sorted(
+                    client.mlsd(server_path),
+                    key=lambda p: (p[1]["type"], p[0])
+                )
+                
+        except Exception as ex:
+            show_log('Read dir: '+server_address(server)+str(server_path), str(ex))
+            return
+            
 
         for name, facts in path_list:
 
@@ -382,10 +389,7 @@ class Command:
     def refresh_node(self, index):
 
         self.node_remove_children(index)
-        try:
-            self.node_refresh(index)
-        except Exception as ex:
-            show_log('Refresh node', str(ex))
+        self.node_refresh(index)
 
     def action_refresh(self):
 
@@ -398,7 +402,7 @@ class Command:
         file_info = dlg_input_ex(
             1,
             "FTP new file",
-            "Filename:", "",
+            "File name:", "",
         )
         if not file_info:
 
@@ -424,17 +428,17 @@ class Command:
 
         with FTPClient(server) as client:
 
-            try:    
-                client.login(server_login(server), server_password(server))
-                client.delete(str(server_path))
-            except Exception as ex:
-                show_log('Remove file', str(ex))
+            client.login(server_login(server), server_password(server))
+            client.delete(str(server_path))
 
     def action_remove_file(self):
 
-        self.remove_file(*self.get_location_by_index(self.selected))
-        index = tree_proc(self.tree, TREE_ITEM_GET_PARENT, self.selected)
-        self.refresh_node(index)
+        try:    
+            self.remove_file(*self.get_location_by_index(self.selected))
+            index = tree_proc(self.tree, TREE_ITEM_GET_PARENT, self.selected)
+            self.refresh_node(index)
+        except Exception as ex:
+            show_log('Remove file', str(ex))
 
     def action_new_dir(self):
 
@@ -450,13 +454,13 @@ class Command:
             return
 
         name = dir_info[0]
-        with FTPClient(server) as client:
+        try:
+            with FTPClient(server) as client:
 
-            try:
                 client.login(server_login(server), server_password(server))
                 client.mkd(str(server_path / name))
-            except Exception as ex:
-                show_log('Create dir', str(ex))
+        except Exception as ex:
+            show_log('Create dir', str(ex))
 
         self.refresh_node(self.selected)
 
@@ -464,7 +468,7 @@ class Command:
 
         if app_proc(PROC_GET_ESCAPE, ''):
         
-            raise Exception('Removing stopped by user')
+            raise Exception('Stopped by user')
 
         for name, facts in tuple(client.mlsd(path)):
 
@@ -487,21 +491,24 @@ class Command:
         app_proc(PROC_SET_ESCAPE, '0')
 
         server, server_path, _ = self.get_location_by_index(self.selected)
-        with FTPClient(server) as client:
+        try:
+            with FTPClient(server) as client:
 
-            try:
                 client.login(server_login(server), server_password(server))
                 self.remove_directory_recursive(client, server_path)
                 tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
-            except Exception as ex:
-                show_log('Remove dir', str(ex))
+        except Exception as ex:
+            show_log('Remove dir', str(ex))
 
 
     def action_open_file(self):
 
         path_info = *_, client_path = self.get_location_by_index(self.selected)
-        self.retrieve_file(*path_info)
-        file_open(str(client_path))
+        try:
+            self.retrieve_file(*path_info)
+            file_open(str(client_path))
+        except Exception as ex:
+            show_log('Download file', str(ex))
 
     def save_options(self):
 
