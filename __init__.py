@@ -183,6 +183,8 @@ class Command:
                 with client_path.open(mode="rb") as fin:
 
                     client.storbinary("STOR " + str(server_path), fin)
+
+            show_log('Uploaded', server_address(server)+str(server_path))
                     
         except Exception as ex:
             show_log('Upload file', str(ex))
@@ -503,9 +505,10 @@ class Command:
 
     def action_open_file(self):
 
-        path_info = *_, client_path = self.get_location_by_index(self.selected)
+        path_info = server, server_path, client_path = self.get_location_by_index(self.selected)
         try:
             self.retrieve_file(*path_info)
+            show_log('Downloaded', server_address(server)+str(server_path))
             file_open(str(client_path))
         except Exception as ex:
             show_log('Download file', str(ex))
