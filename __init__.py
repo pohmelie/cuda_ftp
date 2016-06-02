@@ -218,18 +218,33 @@ class Command:
         def retr_callback(data):
 
             nonlocal progress
+            nonlocal progress_prev
+            nonlocal client
             progress += len(data)
+            
+            #TEST_ESC_EACH_KBYTES = 50
+            #if (progress-progress_prev) // 1024 > TEST_ESC_EACH_KBYTES:
+            #    progress_prev = progress
+            #    if app_proc(PROC_GET_ESCAPE, ''):
+            #        app_proc(PROC_SET_ESCAPE, '0')
+            #        client.quit()
+            #        msg_sttatus('Download stopped')
+            #        return
+            
             fout.write(data)
             msg_status(
                 str.format(
-                    "Downloading '{}': {} bytes",
+                    "Downloading '{}': {} Kbytes",
                     server_path.name,
-                    progress,
+                    progress // 1024,
                 ),
                 True
             )
 
         progress = 0
+        progress_prev = 0
+        app_proc(PROC_SET_ESCAPE, '0')
+        
         with FTPClient(server) as client:
 
             client.login(server_login(server), server_password(server))
