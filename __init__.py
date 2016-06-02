@@ -85,16 +85,17 @@ class Command:
             "New server",
         ),
         NODE_SERVER: (
-            "New server",
-            "Edit server",
+            "New server...",
+            "Edit server...",
             "Remove server",
-            "New file",
-            "New dir",
+            "Go to...",
+            "New file...",
+            "New dir...",
             "Refresh",
         ),
         NODE_DIR: (
-            "New file",
-            "New dir",
+            "New file...",
+            "New dir...",
             "Remove dir",
             "Refresh",
         ),
@@ -172,11 +173,11 @@ class Command:
 
         for name in self.actions[i]:
 
-            action_name = str.lower("action_" + str.replace(name, " ", "_"))
+            action_name = name.lower().replace(" ", "_").rstrip(".")
             desc = str.format(
                 "{};cuda_ftp,{};{};-1",
                 side_name,
-                action_name,
+                "action_" + action_name,
                 name,
             )
             app_proc(PROC_MENU_ADD, desc)
@@ -455,6 +456,35 @@ class Command:
         servers.pop(servers.index(server))
         self.save_options()
 
+    def action_go_to(self):
+
+        ret = dlg_input_ex(
+            1,
+            "Go to path",
+            "Path:", "/",
+        )
+        if ret is None:
+
+            return
+
+        goto = ret[0]
+        path = PurePosixPath(goto)
+        self.node_remove_children(self.selected)
+        node = self.selected
+        for name in filter(lambda n: n != "/", path.parts):
+
+            node = tree_proc(
+                self.tree,
+                TREE_ITEM_ADD,
+                node,
+                -1,
+                name,
+                NODE_DIR
+            )
+
+        self.node_refresh(node)
+        tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, self.selected)
+
     def refresh_node(self, index):
 
         self.node_remove_children(index)
@@ -527,11 +557,14 @@ class Command:
 
         name = dir_info[0]
         try:
+
             with FTPClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
                 client.mkd(str(server_path / name))
+
         except Exception as ex:
+
             show_log("Create dir", str(ex))
 
         self.refresh_node(self.selected)
