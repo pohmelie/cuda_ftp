@@ -220,8 +220,9 @@ class Command:
 
         raise Exception(
             str.format(
-                "Server {} has no full info",
-                server_list_caption(server)
+                "Server {}@{} has no full info", 
+                address, 
+                login
             )
         )
 
