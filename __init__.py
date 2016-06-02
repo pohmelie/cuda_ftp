@@ -185,6 +185,7 @@ class Command:
     def store_file(self, server, server_path, client_path):
 
         try:
+
             with FTPClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
@@ -205,6 +206,7 @@ class Command:
         except Exception as ex:
 
             show_log("Upload file", str(ex))
+            raise
 
     def retrieve_file(self, server, server_path, client_path):
 
@@ -221,7 +223,7 @@ class Command:
             nonlocal progress
             nonlocal progress_prev
             progress += len(data)
-            
+
             TEST_ESC_EACH_KBYTES = 50
             SMOOTH_SIZE_KBYTES = 30
             if (progress-progress_prev) // 1024 > TEST_ESC_EACH_KBYTES:
@@ -237,16 +239,17 @@ class Command:
 
                 progress_prev = progress
                 if app_proc(PROC_GET_ESCAPE, ''):
+
                     text = str.format("Downloading of '{}' stopped", server_path.name)
                     msg_status(text)
                     raise Exception(text)
-                
+
             fout.write(data)
 
         progress = 0
         progress_prev = 0
         app_proc(PROC_SET_ESCAPE, '0')
-        
+
         with FTPClient(server) as client:
 
             client.login(server_login(server), server_password(server))
@@ -325,7 +328,7 @@ class Command:
                 "Read dir: " + server_address(server) + str(server_path),
                 str(ex)
             )
-            return
+            raise
 
         for name, facts in path_list:
 
@@ -482,7 +485,15 @@ class Command:
                 NODE_DIR
             )
 
-        self.node_refresh(node)
+        try:
+
+            self.node_refresh(node)
+
+        except:
+
+            self.node_remove_children(self.selected)
+            raise
+
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, self.selected)
         tree_proc(self.tree, TREE_ITEM_SELECT, node)
 
@@ -542,6 +553,7 @@ class Command:
         except Exception as ex:
 
             show_log("Remove file", str(ex))
+            raise
 
     def action_new_dir(self):
 
@@ -567,6 +579,7 @@ class Command:
         except Exception as ex:
 
             show_log("Create dir", str(ex))
+            raise
 
         self.refresh_node(self.selected)
 
@@ -606,6 +619,7 @@ class Command:
         except Exception as ex:
 
             show_log("Remove dir", str(ex))
+            raise
 
     def action_open_file(self):
 
@@ -620,6 +634,7 @@ class Command:
         except Exception as ex:
 
             show_log("Download file", str(ex))
+            raise
 
     def save_options(self):
 
