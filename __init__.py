@@ -236,9 +236,9 @@ class Command:
 
                 progress_prev = progress
                 if app_proc(PROC_GET_ESCAPE, ''):
-                    app_proc(PROC_SET_ESCAPE, '0')
-                    msg_status('Download stopped by user')
-                    raise Exception('Download stopped by user')
+                    text = str.format("Downloading of '{}' stopped", server_path.name)
+                    msg_status(text)
+                    raise Exception(text)
                 
             fout.write(data)
 
