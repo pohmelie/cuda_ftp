@@ -2,7 +2,6 @@ import collections
 import contextlib
 import json
 import tempfile
-import itertools
 from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
 from datetime import datetime
@@ -12,12 +11,22 @@ import cudatext_cmd
 
 
 def server_address(server):
-    return server.get('address', '')
+
+    return server.get("address", "")
+
+
 def server_login(server):
-    return server.get('login', '')
+
+    return server.get("login", "")
+
+
 def server_password(server):
-    return server.get('password', '')
+
+    return server.get("password", "")
+
+
 def server_list_caption(server):
+
     return str.format("{}@{}", server_address(server), server_login(server))
 
 
@@ -40,16 +49,18 @@ def FTPClient(server):
 
 
 def show_log(str1, str2):
-    title = 'FTP Log'
-    time_fmt = '[%H:%M] '
+
+    title = "FTP Log"
+    time_fmt = "[%H:%M] "
     time_str = datetime.now().strftime(time_fmt)
     ed.cmd(cudatext_cmd.cmd_ShowPanelOutput)
     app_log(LOG_PANEL_ADD, title)
     app_log(LOG_PANEL_FOCUS, title)
     app_log(LOG_SET_PANEL, title)
-    app_log(LOG_ADD, time_str + str1 + ': ' + str2)
-    lines = app_log(LOG_GET_LINES, '').split('\n')
+    app_log(LOG_ADD, time_str + str1 + ": " + str2)
+    lines = app_log(LOG_GET_LINES, "").split("\n")
     app_log(LOG_SET_LINEINDEX, str(len(lines)-1))
+
 
 NODE_SERVER = 0
 NODE_DIR = 1
@@ -104,7 +115,7 @@ class Command:
             with self.options_filename.open() as fin:
 
                 self.options = json.load(fin)
-                
+
         for server in self.options["servers"]:
 
             self.action_new_server(server)
@@ -127,6 +138,7 @@ class Command:
         self.init_options()
 
         if visible:
+
             app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
 
         base = Path(__file__).parent
@@ -179,7 +191,7 @@ class Command:
 
                     client.mkd(str(server_path.parent))
 
-                except error_perm as e:
+                except error_perm:
 
                     pass
 
@@ -187,11 +199,11 @@ class Command:
 
                     client.storbinary("STOR " + str(server_path), fin)
 
-            show_log('Uploaded', server_address(server)+str(server_path))
-                    
+            show_log("Uploaded", server_address(server) + str(server_path))
+
         except Exception as ex:
-            show_log('Upload file', str(ex))
-                    
+
+            show_log("Upload file", str(ex))
 
     def retrieve_file(self, server, server_path, client_path):
 
@@ -214,14 +226,15 @@ class Command:
 
         for server in self.options["servers"]:
 
-            if (server_address(server), server_login(server)) == (address, login):
+            key = server_address(server), server_login(server)
+            if key == (address, login):
 
                 return server
 
         raise Exception(
             str.format(
-                "Server {}@{} has no full info", 
-                address, 
+                "Server {}@{} has no full info",
+                address,
                 login
             )
         )
@@ -239,8 +252,10 @@ class Command:
 
         short_info = str.split(self.get_info(index).caption, "@")
         server = self.get_server_by_short_info(*short_info)
-        p = server_path.relative_to("/")
-        client_path = self.temp_dir_path / server_address(server) / server_login(server) / p
+        client_path = (
+            self.temp_dir_path / server_address(server) /
+            server_login(server) / server_path.relative_to("/")
+        )
         return server, server_path, client_path
 
     def get_location_by_filename(self, filename):
@@ -263,6 +278,7 @@ class Command:
 
         server, server_path, _ = self.get_location_by_index(node_index)
         try:
+
             with FTPClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
@@ -270,11 +286,14 @@ class Command:
                     client.mlsd(server_path),
                     key=lambda p: (p[1]["type"], p[0])
                 )
-                
+
         except Exception as ex:
-            show_log('Read dir: '+server_address(server)+str(server_path), str(ex))
+
+            show_log(
+                "Read dir: " + server_address(server) + str(server_path),
+                str(ex)
+            )
             return
-            
 
         for name, facts in path_list:
 
@@ -341,14 +360,28 @@ class Command:
 
     def get_server_info(self, init_server=None):
 
-        res = dlg_input_ex(
-            3,
-            "FTP server info",
-            "Address (e.g. ftp.site.com:21):", (server_address(init_server) if init_server else ''),
-            "Login:", (server_login(init_server) if init_server else 'anonymous'),
-            "Password:", (server_password(init_server) if init_server else 'user@aol.com'),
-        )
+        if init_server is not None:
+
+            res = dlg_input_ex(
+                3,
+                "FTP server info",
+                "Address (e.g. ftp.site.com:21):", server_address(init_server),
+                "Login:", server_login(init_server),
+                "Password:", server_password(init_server),
+            )
+
+        else:
+
+            res = dlg_input_ex(
+                3,
+                "FTP server info",
+                "Address (e.g. ftp.site.com:21):", "",
+                "Login:", "anonymous",
+                "Password:", "user@aol.com",
+            )
+
         if res is not None:
+
             return dict(zip(("address", "login", "password"), res))
 
     def action_new_server(self, server=None):
@@ -364,7 +397,8 @@ class Command:
             self.save_options()
             server = server_info
 
-        tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, server_list_caption(server), 0)
+        caption = server_list_caption(server)
+        tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, caption, 0)
 
     def action_edit_server(self):
 
@@ -378,7 +412,8 @@ class Command:
         i = servers.index(server)
         servers[i] = server_info
         server = server_info
-        tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, server_list_caption(server))
+        caption = server_list_caption(server)
+        tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
         self.save_options()
 
     def action_remove_server(self):
@@ -436,12 +471,15 @@ class Command:
 
     def action_remove_file(self):
 
-        try:    
+        try:
+
             self.remove_file(*self.get_location_by_index(self.selected))
             index = tree_proc(self.tree, TREE_ITEM_GET_PARENT, self.selected)
             self.refresh_node(index)
+
         except Exception as ex:
-            show_log('Remove file', str(ex))
+
+            show_log("Remove file", str(ex))
 
     def action_new_dir(self):
 
@@ -463,59 +501,63 @@ class Command:
                 client.login(server_login(server), server_password(server))
                 client.mkd(str(server_path / name))
         except Exception as ex:
-            show_log('Create dir', str(ex))
+            show_log("Create dir", str(ex))
 
         self.refresh_node(self.selected)
 
     def remove_directory_recursive(self, client, path):
 
-        if app_proc(PROC_GET_ESCAPE, ''):
-        
-            raise Exception('Stopped by user')
+        if app_proc(PROC_GET_ESCAPE, ""):
+
+            raise Exception("Stopped by user")
 
         for name, facts in tuple(client.mlsd(path)):
 
             if facts["type"] == "dir":
 
-                msg_status('Removing ftp dir: '+str(path / name), True)
+                msg_status("Removing ftp dir: " + str(path / name), True)
                 self.remove_directory_recursive(client, path / name)
 
             elif facts["type"] == "file":
 
-                msg_status('Removing ftp file: '+str(path / name), True)
+                msg_status("Removing ftp file: " + str(path / name), True)
                 client.delete(str(path / name))
 
-        msg_status('Removing ftp dir: '+str(path), True)
+        msg_status("Removing ftp dir: " + str(path), True)
         client.rmd(str(path))
-            
 
     def action_remove_dir(self):
 
-        app_proc(PROC_SET_ESCAPE, '0')
-
+        app_proc(PROC_SET_ESCAPE, "0")
         server, server_path, _ = self.get_location_by_index(self.selected)
         try:
+
             with FTPClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
                 self.remove_directory_recursive(client, server_path)
                 tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
-        except Exception as ex:
-            show_log('Remove dir', str(ex))
 
+        except Exception as ex:
+
+            show_log("Remove dir", str(ex))
 
     def action_open_file(self):
 
-        path_info = server, server_path, client_path = self.get_location_by_index(self.selected)
+        path_info = server, server_path, client_path = \
+            self.get_location_by_index(self.selected)
         try:
+
             self.retrieve_file(*path_info)
-            show_log('Downloaded', server_address(server)+str(server_path))
+            show_log("Downloaded", server_address(server) + str(server_path))
             file_open(str(client_path))
+
         except Exception as ex:
-            show_log('Download file', str(ex))
+
+            show_log("Download file", str(ex))
 
     def save_options(self):
 
         with self.options_filename.open(mode="w") as fout:
 
-            fout.write(json.dumps(self.options, indent=2))
+            json.dump(self.options, fout, indent=2)
