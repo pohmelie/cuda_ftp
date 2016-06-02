@@ -219,17 +219,15 @@ class Command:
 
             nonlocal progress
             nonlocal progress_prev
-            nonlocal client
             progress += len(data)
             
-            #TEST_ESC_EACH_KBYTES = 50
-            #if (progress-progress_prev) // 1024 > TEST_ESC_EACH_KBYTES:
-            #    progress_prev = progress
-            #    if app_proc(PROC_GET_ESCAPE, ''):
-            #        app_proc(PROC_SET_ESCAPE, '0')
-            #        client.quit()
-            #        msg_sttatus('Download stopped')
-            #        return
+            TEST_ESC_EACH_KBYTES = 100
+            if (progress-progress_prev) // 1024 > TEST_ESC_EACH_KBYTES:
+                progress_prev = progress
+                if app_proc(PROC_GET_ESCAPE, ''):
+                    app_proc(PROC_SET_ESCAPE, '0')
+                    msg_status('Download stopped by user')
+                    raise Exception('Download stopped by user')
             
             fout.write(data)
             msg_status(
