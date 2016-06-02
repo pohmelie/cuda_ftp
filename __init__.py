@@ -222,13 +222,14 @@ class Command:
             progress += len(data)
             
             TEST_ESC_EACH_KBYTES = 50
+            SMOOTH_SIZE_KBYTES = 30
             if (progress-progress_prev) // 1024 > TEST_ESC_EACH_KBYTES:
 
                 msg_status(
                     str.format(
                         "Downloading '{}': {} Kbytes",
                         server_path.name,
-                        progress // 1024,
+                        progress // 1024 // SMOOTH_SIZE_KBYTES * SMOOTH_SIZE_KBYTES,
                     ),
                     True
                 )
