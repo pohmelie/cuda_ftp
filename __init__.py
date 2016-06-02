@@ -215,12 +215,27 @@ class Command:
 
             pass
 
+        def retr_callback(data):
+
+            nonlocal progress
+            progress += len(data)
+            fout.write(data)
+            msg_status(
+                str.format(
+                    "Downloading '{}': {} bytes",
+                    server_path.name,
+                    progress,
+                ),
+                True
+            )
+
+        progress = 0
         with FTPClient(server) as client:
 
             client.login(server_login(server), server_password(server))
             with client_path.open(mode="wb") as fout:
 
-                client.retrbinary("RETR " + str(server_path), fout.write)
+                client.retrbinary("RETR " + str(server_path), retr_callback)
 
     def get_server_by_short_info(self, address, login):
 
