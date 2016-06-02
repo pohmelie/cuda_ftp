@@ -17,6 +17,9 @@ def server_login(server):
     return server.get('login', '')
 def server_password(server):
     return server.get('password', '')
+def server_list_caption(server):
+    return str.format("{}@{}", server_address(server), server_login(server))
+
 
 @contextlib.contextmanager
 def FTPClient(server):
@@ -217,9 +220,8 @@ class Command:
 
         raise Exception(
             str.format(
-                "Server {}@{} has no full info",
-                address,
-                login,
+                "Server {} has no full info",
+                server_list_caption(server)
             )
         )
 
@@ -361,8 +363,7 @@ class Command:
             self.save_options()
             server = server_info
 
-        caption = str.format("{}@{}", server_address(server), server_login(server))
-        tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, caption, 0)
+        tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, server_list_caption(server), 0)
 
     def action_edit_server(self):
 
@@ -376,8 +377,7 @@ class Command:
         i = servers.index(server)
         servers[i] = server_info
         server = server_info
-        caption = str.format("{}@{}", server_address(server), server_login(server))
-        tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
+        tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, server_list_caption(server))
         self.save_options()
 
     def action_remove_server(self):
