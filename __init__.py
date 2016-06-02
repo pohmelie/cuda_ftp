@@ -221,23 +221,25 @@ class Command:
             nonlocal progress_prev
             progress += len(data)
             
-            TEST_ESC_EACH_KBYTES = 100
+            TEST_ESC_EACH_KBYTES = 50
             if (progress-progress_prev) // 1024 > TEST_ESC_EACH_KBYTES:
+
+                msg_status(
+                    str.format(
+                        "Downloading '{}': {} Kbytes",
+                        server_path.name,
+                        progress // 1024,
+                    ),
+                    True
+                )
+
                 progress_prev = progress
                 if app_proc(PROC_GET_ESCAPE, ''):
                     app_proc(PROC_SET_ESCAPE, '0')
                     msg_status('Download stopped by user')
                     raise Exception('Download stopped by user')
-            
+                
             fout.write(data)
-            msg_status(
-                str.format(
-                    "Downloading '{}': {} Kbytes",
-                    server_path.name,
-                    progress // 1024,
-                ),
-                True
-            )
 
         progress = 0
         progress_prev = 0
