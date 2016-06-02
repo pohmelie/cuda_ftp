@@ -1,4 +1,8 @@
 
+2016.06.02
++ statusbar progress on downld, esc key
++ commd "Go to" for server
+
 2016.05.31
 + ftp errors will show in output-pane now
 + status msg on deleting big dirs, Esc key

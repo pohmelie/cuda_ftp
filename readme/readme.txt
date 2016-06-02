@@ -9,6 +9,7 @@ For servers:
  - new server
  - edit server
  - remove server
+ - go to (change ftp directory)
  - new file (creates file in initial dir)
  - new dir (creates dir in initial dir)
  - refresh (re-reads initial dir)
