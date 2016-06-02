@@ -10,6 +10,11 @@ from cudatext import *
 import cudatext_cmd
 
 
+# Show ftp exceptions in Console panel (download/upload/etc)
+# Not good since errors shown in FTP Log panel anyway
+SHOW_EX = False
+
+
 def server_address(server):
 
     return server.get("address", "")
@@ -206,7 +211,7 @@ class Command:
         except Exception as ex:
 
             show_log("Upload file", str(ex))
-            raise
+            if SHOW_EX: raise
 
     def retrieve_file(self, server, server_path, client_path):
 
@@ -492,7 +497,10 @@ class Command:
         except:
 
             self.node_remove_children(self.selected)
-            raise
+            if SHOW_EX:
+                raise
+            else:
+                return
 
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, self.selected)
         tree_proc(self.tree, TREE_ITEM_SELECT, node)
@@ -500,7 +508,10 @@ class Command:
     def refresh_node(self, index):
 
         self.node_remove_children(index)
-        self.node_refresh(index)
+        try:
+            self.node_refresh(index)
+        except:
+            if SHOW_EX: raise
 
     def action_refresh(self):
 
@@ -553,7 +564,7 @@ class Command:
         except Exception as ex:
 
             show_log("Remove file", str(ex))
-            raise
+            if SHOW_EX: raise
 
     def action_new_dir(self):
 
@@ -579,7 +590,7 @@ class Command:
         except Exception as ex:
 
             show_log("Create dir", str(ex))
-            raise
+            if SHOW_EX: raise
 
         self.refresh_node(self.selected)
 
@@ -619,7 +630,7 @@ class Command:
         except Exception as ex:
 
             show_log("Remove dir", str(ex))
-            raise
+            if SHOW_EX: raise
 
     def action_open_file(self):
 
@@ -634,7 +645,7 @@ class Command:
         except Exception as ex:
 
             show_log("Download file", str(ex))
-            raise
+            if SHOW_EX: raise
 
     def save_options(self):
 
