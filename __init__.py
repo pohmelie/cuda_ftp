@@ -484,6 +484,7 @@ class Command:
 
         self.node_refresh(node)
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, self.selected)
+        tree_proc(self.tree, TREE_ITEM_SELECT, node)
 
     def refresh_node(self, index):
 
