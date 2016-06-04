@@ -30,6 +30,11 @@ def server_password(server):
     return server.get("password", "")
 
 
+def server_init_dir(server):
+
+    return server.get("init_dir", "")
+
+
 def server_list_caption(server):
 
     return str.format("{}@{}", server_address(server), server_login(server))
@@ -403,26 +408,28 @@ class Command:
         if init_server is not None:
 
             res = dlg_input_ex(
-                3,
+                4,
                 "FTP server info",
                 "Address (e.g. ftp.site.com:21):", server_address(init_server),
                 "Login:", server_login(init_server),
                 "Password:", server_password(init_server),
+                "Initial remote dir:", server_init_dir(init_server),
             )
 
         else:
 
             res = dlg_input_ex(
-                3,
+                4,
                 "FTP server info",
                 "Address (e.g. ftp.site.com:21):", "",
                 "Login:", "anonymous",
                 "Password:", "user@aol.com",
+                "Initial remote dir:", "",
             )
 
         if res is not None:
 
-            return dict(zip(("address", "login", "password"), res))
+            return dict(zip(("address", "login", "password", "init_dir"), res))
 
     def action_new_server(self, server=None):
 
@@ -471,11 +478,13 @@ class Command:
             "Go to path",
             "Path:", "/",
         )
-        if ret is None:
+        
+        if ret:
 
-            return
-
-        goto = ret[0]
+            self.goto_server_path(ret[0])
+        
+    def goto_server_path(self, goto):
+        
         path = PurePosixPath(goto)
         self.node_remove_children(self.selected)
         node = self.selected
@@ -515,6 +524,14 @@ class Command:
 
     def action_refresh(self):
 
+        # special case: refresh of server, with "init dir" set
+        if self.is_selected_server():
+            server, server_path, client_path = self.get_location_by_index(self.selected)
+            goto = server_init_dir(server)
+            if goto:
+                self.goto_server_path(goto)
+                return
+        
         self.refresh_node(self.selected)
 
     def action_new_file(self):
@@ -652,3 +669,8 @@ class Command:
         with self.options_filename.open(mode="w") as fout:
 
             json.dump(self.options, fout, indent=2)
+
+    def is_selected_server(self):
+        info = self.get_info(self.selected)
+        return info.image == NODE_SERVER
+    
