@@ -405,29 +405,21 @@ class Command:
 
     def get_server_info(self, init_server=None):
 
-        if init_server is not None:
+        _adr = server_address(init_server) if init_server else ""
+        _log = server_login(init_server) if init_server else "anonymous"
+        _pwd = server_password(init_server) if init_server else "user@aol.com"
+        _dir = server_init_dir(init_server) if init_server else ""
 
-            res = dlg_input_ex(
-                4,
-                "FTP server info",
-                "Address (e.g. ftp.site.com:21):", server_address(init_server),
-                "Login:", server_login(init_server),
-                "Password:", server_password(init_server),
-                "Initial remote dir:", server_init_dir(init_server),
-            )
+        res = dlg_input_ex(
+            4,
+            "FTP server info",
+            "Address (e.g. ftp.site.com:21):", _adr,
+            "Login:", _log,
+            "Password:", _pwd,
+            "Initial remote dir:", _dir,
+        )
 
-        else:
-
-            res = dlg_input_ex(
-                4,
-                "FTP server info",
-                "Address (e.g. ftp.site.com:21):", "",
-                "Login:", "anonymous",
-                "Password:", "user@aol.com",
-                "Initial remote dir:", "",
-            )
-
-        if res is not None:
+        if res:
 
             return dict(zip(("address", "login", "password", "init_dir"), res))
 
