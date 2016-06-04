@@ -1,6 +1,9 @@
 
+2016.06.04
++ ftp server prop "Init dir"
+
 2016.06.02
-+ statusbar progress on downld, esc key
++ statusbar progress on downld, Esc key
 + commd "Go to" for server
 
 2016.05.31
