@@ -414,7 +414,11 @@ class Command:
 
         short_info = str.split(self.get_info(index).caption, "@")
         server = self.get_server_by_short_info(*short_info)
-        prefix = pathlib.Path(*server_address(server))
+        prefix = pathlib.Path(
+            server_type(server), 
+            server_address(server),
+            server_port(server)
+            )            
         client_path = (
             self.temp_dir_path / prefix /
             server_login(server) / server_path.relative_to("/")
