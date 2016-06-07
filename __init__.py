@@ -52,8 +52,16 @@ def server_list_caption(server):
 
 def get_address_parts(address):
 
-    schema, rest = address.split("://")
-    host, port = rest.split(":")
+    if "://" in address:
+        schema, rest = address.split("://")
+    else:
+        schema, rest = 'ftp', address
+
+    if ":" in rest:
+        host, port = rest.split(":")
+    else:
+        host, port = rest, '21'
+            
     return schema, host, port
 
 
@@ -338,7 +346,8 @@ class Command:
                     str.format(
                         "Downloading '{}': {} Kbytes",
                         server_path.name,
-                        progress // 1024 // SMOOTH_SIZE_KBYTES ** 2,
+                        # rounding by N kb: divide, then multiply
+                        progress // 1024 // SMOOTH_SIZE_KBYTES * SMOOTH_SIZE_KBYTES,
                     ),
                     True
                 )
