@@ -2,9 +2,19 @@ import collections
 import contextlib
 import json
 import tempfile
+import socket
+import stat
 from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
 from datetime import datetime
+
+try:
+
+    import paramiko
+
+except ImportError:
+
+    paramiko = None
 
 from cudatext import *
 import cudatext_cmd
@@ -40,18 +50,103 @@ def server_list_caption(server):
     return str.format("{}@{}", server_address(server), server_login(server))
 
 
+def get_address_parts(address):
+
+    schema, rest = address.split("://")
+    host, port = rest.split(":")
+    return schema, host, port
+
+
+class SFTP:
+
+    def connect(self, address, port):
+
+        self.sock = socket.create_connection((address, port))
+        self.transport = paramiko.transport.Transport(self.sock)
+
+    def login(self, username, password):
+
+        self.transport.connect(None, username, password)
+        self.sftp = self.transport.open_sftp_client()
+
+    def quit(self):
+
+        self.sftp.close()
+        self.transport.close()
+
+    def mlsd(self, path):
+
+        for info in self.sftp.listdir_iter(str(path)):
+
+            if stat.S_ISDIR(info.st_mode):
+
+                yield info.filename, dict(type="dir", size=info.st_size)
+
+            elif stat.S_ISREG(info.st_mode):
+
+                yield info.filename, dict(type="file", size=info.st_size)
+
+    def retrbinary(self, command, callback):
+
+        path = command.lstrip("RETR ")
+        with self.sftp.open(path, mode="r") as fin:
+
+            while True:
+
+                data = fin.read(8192)
+                if not data:
+
+                    break
+
+                callback(data)
+
+    def storbinary(self, command, fin):
+
+        path = command.lstrip("STOR ")
+        self.sftp.putfo(fin, path)
+
+    def mkd(self, path):
+
+        try:
+
+            self.sftp.mkdir(path)
+
+        except OSError:
+
+            raise error_perm
+
+    def rmd(self, path):
+
+        self.sftp.rmdir(path)
+
+    def delete(self, path):
+
+        self.sftp.remove(path)
+
+
 @contextlib.contextmanager
-def FTPClient(server):
+def CommonClient(server):
 
-    client = FTP()
-    adr = server_address(server)
-    if ":" in adr:
+    address = server_address(server)
+    schema, host, port = get_address_parts(address)
+    if schema == "sftp":
 
-        host, port = str.split(adr, ":")
+        if paramiko is None:
+
+            msg_box(
+                "Please install 'paramiko' for sftp support",
+                MB_OK | MB_ICONERROR,
+            )
+
+        client = SFTP()
+
+    elif schema == "ftp":
+
+        client = FTP()
 
     else:
 
-        host, port = adr, 0
+        raise Exception(str.format("Unknown schema: '{}'", schema))
 
     client.connect(host, int(port))
     yield client
@@ -196,7 +291,7 @@ class Command:
 
         try:
 
-            with FTPClient(server) as client:
+            with CommonClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
                 try:
@@ -264,7 +359,7 @@ class Command:
         progress_prev = 0
         app_proc(PROC_SET_ESCAPE, '0')
 
-        with FTPClient(server) as client:
+        with CommonClient(server) as client:
 
             client.login(server_login(server), server_password(server))
             with client_path.open(mode="wb") as fout:
@@ -301,8 +396,9 @@ class Command:
 
         short_info = str.split(self.get_info(index).caption, "@")
         server = self.get_server_by_short_info(*short_info)
+        prefix = pathlib.Path(*get_address_parts(server_address(server)))
         client_path = (
-            self.temp_dir_path / server_address(server) /
+            self.temp_dir_path / prefix /
             server_login(server) / server_path.relative_to("/")
         )
         return server, server_path, client_path
@@ -311,8 +407,10 @@ class Command:
 
         client_path = Path(filename)
         path = client_path.relative_to(self.temp_dir_path)
-        server = self.get_server_by_short_info(*path.parts[:2])
-        virtual = PurePosixPath(server_address(server)) / server_login(server)
+        address = str.format("{}://{}:{}", *path.parts[:3])
+        login = path.parts[3]
+        server = self.get_server_by_short_info(address, login)
+        virtual = PurePosixPath(*path.parts[:4])
         server_path = PurePosixPath("/") / path.relative_to(virtual)
         return server, server_path, client_path
 
@@ -328,7 +426,7 @@ class Command:
         server, server_path, _ = self.get_location_by_index(node_index)
         try:
 
-            with FTPClient(server) as client:
+            with CommonClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
                 path_list = sorted(
@@ -417,15 +515,33 @@ class Command:
         res = dlg_input_ex(
             4,
             "FTP server info",
-            "Address (e.g. ftp.site.com:21):", _adr,
+            "Address (e.g. ftp://ftp.site.com:21):", _adr,
             "Login:", _log,
             "Password:", _pwd,
             "Initial remote dir:", _dir,
         )
 
-        if res:
+        if not res:
 
-            return dict(zip(("address", "login", "password", "init_dir"), res))
+            return
+
+        data = dict(zip(("address", "login", "password", "init_dir"), res))
+        address = data["address"]
+        if not address.startswith(("ftp://", "sftp://")):
+
+            address = "ftp://" + address
+
+        if address.count(":") < 2:
+
+            if address.startswith("ftp://"):
+
+                address += ":21"
+
+            else:
+
+                address += ":22"
+
+        return data
 
     def action_new_server(self, server=None):
 
@@ -563,7 +679,7 @@ class Command:
 
     def remove_file(self, server, server_path, client_path):
 
-        with FTPClient(server) as client:
+        with CommonClient(server) as client:
 
             client.login(server_login(server), server_password(server))
             client.delete(str(server_path))
@@ -598,7 +714,7 @@ class Command:
         name = dir_info[0]
         try:
 
-            with FTPClient(server) as client:
+            with CommonClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
                 client.mkd(str(server_path / name))
@@ -638,7 +754,7 @@ class Command:
         server, server_path, _ = self.get_location_by_index(self.selected)
         try:
 
-            with FTPClient(server) as client:
+            with CommonClient(server) as client:
 
                 client.login(server_login(server), server_password(server))
                 self.remove_directory_recursive(client, server_path)
