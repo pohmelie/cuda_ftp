@@ -45,24 +45,31 @@ def server_init_dir(server):
     return server.get("init_dir", "")
 
 
+def server_port(server):
+
+    s = server.get("port", "")
+    try:
+        n = int(s)
+        return s
+    except:
+        if server_type(server) == 'ftp':
+            return '21'
+        else:
+            return '22'
+
+
+def server_type(server):
+
+    s = server.get("type", "")
+    if not s in ('ftp', 'sftp'):
+        s = 'ftp'
+    return s
+
+
 def server_list_caption(server):
 
     return str.format("{}@{}", server_address(server), server_login(server))
 
-
-def get_address_parts(address):
-
-    if "://" in address:
-        schema, rest = address.split("://")
-    else:
-        schema, rest = 'ftp', address
-
-    if ":" in rest:
-        host, port = rest.split(":")
-    else:
-        host, port = rest, '21'
-            
-    return schema, host, port
 
 
 class SFTP:
@@ -136,7 +143,9 @@ class SFTP:
 def CommonClient(server):
 
     address = server_address(server)
-    schema, host, port = get_address_parts(address)
+    schema = server_type(server)
+    host = server_address(server)
+    port = server_port(server)
     if schema == "sftp":
 
         if paramiko is None:
@@ -405,7 +414,7 @@ class Command:
 
         short_info = str.split(self.get_info(index).caption, "@")
         server = self.get_server_by_short_info(*short_info)
-        prefix = pathlib.Path(*get_address_parts(server_address(server)))
+        prefix = pathlib.Path(*server_address(server))
         client_path = (
             self.temp_dir_path / prefix /
             server_login(server) / server_path.relative_to("/")
@@ -516,15 +525,19 @@ class Command:
 
     def get_server_info(self, init_server=None):
 
+        _typ = server_type(init_server) if init_server else "ftp"
         _adr = server_address(init_server) if init_server else ""
+        _prt = server_port(init_server) if init_server else ""
         _log = server_login(init_server) if init_server else "anonymous"
         _pwd = server_password(init_server) if init_server else "user@aol.com"
         _dir = server_init_dir(init_server) if init_server else ""
 
         res = dlg_input_ex(
-            4,
+            6,
             "FTP server info",
-            "Address (e.g. ftp://ftp.site.com:21):", _adr,
+            "Type (ftp, sftp):", _typ,
+            "Address (e.g. ftp.site.com):", _adr,
+            "Port (e.g. 21):", _prt,
             "Login:", _log,
             "Password:", _pwd,
             "Initial remote dir:", _dir,
@@ -534,22 +547,7 @@ class Command:
 
             return
 
-        data = dict(zip(("address", "login", "password", "init_dir"), res))
-        address = data["address"]
-        if not address.startswith(("ftp://", "sftp://")):
-
-            address = "ftp://" + address
-
-        if address.count(":") < 2:
-
-            if address.startswith("ftp://"):
-
-                address += ":21"
-
-            else:
-
-                address += ":22"
-
+        data = dict(zip(("type", "address", "port", "login", "password", "init_dir"), res))
         return data
 
     def action_new_server(self, server=None):
