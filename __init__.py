@@ -216,7 +216,8 @@ class Command:
         except Exception as ex:
 
             show_log("Upload file", str(ex))
-            if SHOW_EX: raise
+            if SHOW_EX:
+                raise
 
     def retrieve_file(self, server, server_path, client_path):
 
@@ -242,7 +243,7 @@ class Command:
                     str.format(
                         "Downloading '{}': {} Kbytes",
                         server_path.name,
-                        progress // 1024 // SMOOTH_SIZE_KBYTES * SMOOTH_SIZE_KBYTES,
+                        progress // 1024 // SMOOTH_SIZE_KBYTES ** 2,
                     ),
                     True
                 )
@@ -250,7 +251,10 @@ class Command:
                 progress_prev = progress
                 if app_proc(PROC_GET_ESCAPE, ''):
 
-                    text = str.format("Downloading of '{}' stopped", server_path.name)
+                    text = str.format(
+                        "Downloading of '{}' stopped",
+                        server_path.name
+                    )
                     msg_status(text)
                     raise Exception(text)
 
@@ -470,13 +474,13 @@ class Command:
             "Go to path",
             "Path:", "/",
         )
-        
+
         if ret:
 
             self.goto_server_path(ret[0])
-        
+
     def goto_server_path(self, goto):
-        
+
         path = PurePosixPath(goto)
         self.node_remove_children(self.selected)
         node = self.selected
@@ -512,18 +516,20 @@ class Command:
         try:
             self.node_refresh(index)
         except:
-            if SHOW_EX: raise
+            if SHOW_EX:
+                raise
 
     def action_refresh(self):
 
         # special case: refresh of server, with "init dir" set
         if self.is_selected_server():
-            server, server_path, client_path = self.get_location_by_index(self.selected)
+            server, server_path, client_path = self.get_location_by_index(
+                self.selected)
             goto = server_init_dir(server)
             if goto:
                 self.goto_server_path(goto)
                 return
-        
+
         self.refresh_node(self.selected)
 
     def action_new_file(self):
@@ -573,7 +579,8 @@ class Command:
         except Exception as ex:
 
             show_log("Remove file", str(ex))
-            if SHOW_EX: raise
+            if SHOW_EX:
+                raise
 
     def action_new_dir(self):
 
@@ -599,7 +606,8 @@ class Command:
         except Exception as ex:
 
             show_log("Create dir", str(ex))
-            if SHOW_EX: raise
+            if SHOW_EX:
+                raise
 
         self.refresh_node(self.selected)
 
@@ -639,7 +647,8 @@ class Command:
         except Exception as ex:
 
             show_log("Remove dir", str(ex))
-            if SHOW_EX: raise
+            if SHOW_EX:
+                raise
 
     def action_open_file(self):
 
@@ -654,7 +663,8 @@ class Command:
         except Exception as ex:
 
             show_log("Download file", str(ex))
-            if SHOW_EX: raise
+            if SHOW_EX:
+                raise
 
     def save_options(self):
 
@@ -665,4 +675,3 @@ class Command:
     def is_selected_server(self):
         info = self.get_info(self.selected)
         return info.image == NODE_SERVER
-    
