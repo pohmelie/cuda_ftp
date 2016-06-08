@@ -1,0 +1,27 @@
+
+Windows
+-------
+
+If you’re on Windows you’ll need to make sure you have OpenSSL installed. There are pre-compiled binaries available. If your installation is in an unusual location set the LIB and INCLUDE environment variables to include the corresponding locations. For example:
+
+C:\> set LIB=C:\OpenSSL-1.0.1f-64bit\lib;%LIB%
+C:\> set INCLUDE=C:\OpenSSL-1.0.1f-64bit\include;%INCLUDE%
+
+
+Linux
+-----
+
+For Debian and Ubuntu, the following command will ensure that the required dependencies are installed:
+
+sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+
+For Fedora and RHEL-derivatives, the following command will ensure that the required dependencies are installed:
+
+sudo yum install gcc libffi-devel python-devel openssl-devel 
+
+
+You should now be able to install cryptography + paramiko with the usual.
+
+sudo apt-get install python3-pip
+sudo pip3 install cryptography
+sudo pip3 install paramiko
