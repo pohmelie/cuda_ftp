@@ -343,6 +343,7 @@ class Command:
     def show_menu_connect(self):
         
         if not self.inited:
+        
             self.inited = True
             self.init_panel()
             self.init_options()
@@ -352,8 +353,11 @@ class Command:
         if res is None:
             return
             
-        item_chosen = menu_items[res]
-        msg_status('Connect to: '+item_chosen)
+        self.connect_by_caption(menu_items[res])
+    
+    def connect_by_caption(self, item_chosen):
+    
+        msg_status('Connect to: '+item_chosen, True)
         self.show_panel(True)
         
         # find panel item for item_chosen
@@ -362,9 +366,11 @@ class Command:
             return
         
         for item in items:
+        
             item_handle = item[0]
             item_caption = item[1]
             if item_caption == item_chosen:
+            
                 tree_proc(self.tree, TREE_ITEM_FOLD_DEEP, 0)
                 tree_proc(self.tree, TREE_ITEM_SELECT, item_handle)
                 self.action_refresh()
