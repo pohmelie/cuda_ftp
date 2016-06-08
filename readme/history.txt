@@ -1,6 +1,9 @@
 
 2016.06.08
-+ support for SFTP, using Paramiko
++ support for SFTP, Linux only
++ menu item in Plugins: Menu Connect
++ server prop: Timeout
++ passw can be "?" to ask each time
 
 2016.06.04
 + ftp server prop "Init dir"
