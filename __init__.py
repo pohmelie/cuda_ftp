@@ -24,6 +24,9 @@ import cudatext_cmd
 # Not good since errors shown in FTP Log panel anyway
 SHOW_EX = False
 
+# temp storage of password inputs
+pass_inputs = {}
+
 
 def server_address(server):
 
@@ -35,9 +38,20 @@ def server_login(server):
     return server.get("login", "")
 
 
-def server_password(server):
+def server_password(server, can_input=True):
 
-    return server.get("password", "")
+    s = server.get("password", "")
+    if s == '?' and can_input:
+        title = server_list_caption(server)
+        s = pass_inputs.get(title, '')
+        if s:
+            return s
+            
+        s = dlg_input('Password for {}:'.format(title), '')
+        if not s:
+            raise Exception('Password input cancelled')
+        pass_inputs[title] = s
+    return s
 
 
 def server_init_dir(server):
@@ -95,7 +109,7 @@ def dialog_server(init_server=None):
     _adr = server_address(init_server) if init_server else ""
     _prt = server_port(init_server) if init_server else ""
     _log = server_login(init_server) if init_server else "anonymous"
-    _pwd = server_password(init_server) if init_server else "user@aol.com"
+    _pwd = server_password(init_server, False) if init_server else "user@aol.com"
     _dir = server_init_dir(init_server) if init_server else ""
     _tim = server_timeout(init_server) if init_server else "30"
 
@@ -105,8 +119,8 @@ def dialog_server(init_server=None):
         "Type (ftp, sftp):", _typ,
         "Host (e.g. ftp.site.com):", _adr,
         "Port (e.g. 21):", _prt,
-        "Login:", _log,
-        "Password:", _pwd,
+        "Username:", _log,
+        "Password (? - ask every time):", _pwd,
         "Initial remote dir:", _dir,
         "Timeout (seconds):", _tim,
     )
