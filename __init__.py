@@ -76,6 +76,36 @@ def server_list_caption(server):
     )
 
 
+def dialog_server(init_server=None):
+    """ 
+    Must give dict, which can be parsed by server_nnnnn(), or None
+    """
+
+    _typ = server_type(init_server) if init_server else "ftp"
+    _adr = server_address(init_server) if init_server else ""
+    _prt = server_port(init_server) if init_server else ""
+    _log = server_login(init_server) if init_server else "anonymous"
+    _pwd = server_password(init_server) if init_server else "user@aol.com"
+    _dir = server_init_dir(init_server) if init_server else ""
+
+    res = dlg_input_ex(
+        6,
+        "FTP server info",
+        "Type (ftp, sftp):", _typ,
+        "Address (e.g. ftp.site.com):", _adr,
+        "Port (e.g. 21):", _prt,
+        "Login:", _log,
+        "Password:", _pwd,
+        "Initial remote dir:", _dir,
+    )
+
+    if not res:
+
+        return
+
+    data = dict(zip(("type", "address", "port", "login", "password", "init_dir"), res))
+    return data
+
 
 class SFTP:
 
@@ -534,38 +564,11 @@ class Command:
 
                 self.action_open_file()
 
-    def get_server_info(self, init_server=None):
-
-        _typ = server_type(init_server) if init_server else "ftp"
-        _adr = server_address(init_server) if init_server else ""
-        _prt = server_port(init_server) if init_server else ""
-        _log = server_login(init_server) if init_server else "anonymous"
-        _pwd = server_password(init_server) if init_server else "user@aol.com"
-        _dir = server_init_dir(init_server) if init_server else ""
-
-        res = dlg_input_ex(
-            6,
-            "FTP server info",
-            "Type (ftp, sftp):", _typ,
-            "Address (e.g. ftp.site.com):", _adr,
-            "Port (e.g. 21):", _prt,
-            "Login:", _log,
-            "Password:", _pwd,
-            "Initial remote dir:", _dir,
-        )
-
-        if not res:
-
-            return
-
-        data = dict(zip(("type", "address", "port", "login", "password", "init_dir"), res))
-        return data
-
     def action_new_server(self, server=None):
 
         if server is None:
 
-            server_info = self.get_server_info()
+            server_info = dialog_server()
             if server_info is None:
 
                 return
@@ -580,7 +583,7 @@ class Command:
     def action_edit_server(self):
 
         server, *_ = self.get_location_by_index(self.selected)
-        server_info = self.get_server_info(server)
+        server_info = dialog_server(server)
         if server_info is None:
 
             return
