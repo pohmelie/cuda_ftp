@@ -88,6 +88,10 @@ def server_type(server):
     if not s in ('ftp', 'sftp'):
         s = 'ftp'
     return s
+    
+    
+def server_label(server):
+    return server.get("label", "")
 
 
 def server_list_caption(server):
@@ -112,9 +116,10 @@ def dialog_server(init_server=None):
     _pwd = server_password(init_server, False) if init_server else "user@aol.com"
     _dir = server_init_dir(init_server) if init_server else ""
     _tim = server_timeout(init_server) if init_server else "30"
+    _lbl = server_label(init_server) if init_server else ""
 
     res = dlg_input_ex(
-        7,
+        8,
         "FTP server info",
         "Type (ftp, sftp):", _typ,
         "Host (e.g. ftp.site.com):", _adr,
@@ -123,13 +128,23 @@ def dialog_server(init_server=None):
         "Password (? - ask every time):", _pwd,
         "Initial remote dir:", _dir,
         "Timeout (seconds):", _tim,
+        "Label (for menu):", _lbl,
     )
 
     if not res:
 
         return
 
-    data = dict(zip(("type", "address", "port", "login", "password", "init_dir", "timeout"), res))
+    data = dict(zip((
+        "type", 
+        "address", 
+        "port", 
+        "login", 
+        "password", 
+        "init_dir", 
+        "timeout",
+        "label",
+        ), res))
     return data
 
 
@@ -375,6 +390,33 @@ class Command:
                 tree_proc(self.tree, TREE_ITEM_SELECT, item_handle)
                 self.action_refresh()
                 return
+
+
+    def connect_label(self, label):
+
+        if not self.inited:
+        
+            self.inited = True
+            self.init_panel()
+            self.init_options()
+
+        for server in self.options["servers"]:
+            if server_label(server)==label:
+        
+                self.connect_by_caption(server_list_caption(server))
+                return
+            
+        else:
+        
+            msg_status('Cannot find server with label "{}"'.format(label))
+            
+
+    def connect_label_1(self): self.connect_label('1')
+    def connect_label_2(self): self.connect_label('2')
+    def connect_label_3(self): self.connect_label('3')
+    def connect_label_4(self): self.connect_label('4')
+    def connect_label_5(self): self.connect_label('5')
+    def connect_label_6(self): self.connect_label('6')
 
     @property
     def selected(self):

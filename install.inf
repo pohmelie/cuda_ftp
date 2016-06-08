@@ -18,3 +18,39 @@ method=show_panel
 section=commands
 caption=FTP\Menu "Connect"
 method=show_menu_connect
+
+
+[item100]
+section=commands
+caption=FTP\-
+method=_
+
+[item101]
+section=commands
+caption=FTP\Connect by label "1"
+method=connect_label_1
+
+[item102]
+section=commands
+caption=FTP\Connect by label "2"
+method=connect_label_2
+
+[item103]
+section=commands
+caption=FTP\Connect by label "3"
+method=connect_label_3
+
+[item104]
+section=commands
+caption=FTP\Connect by label "4"
+method=connect_label_4
+
+[item105]
+section=commands
+caption=FTP\Connect by label "5"
+method=connect_label_5
+
+[item106]
+section=commands
+caption=FTP\Connect by label "6"
+method=connect_label_6
