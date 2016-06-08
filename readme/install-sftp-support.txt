@@ -2,10 +2,7 @@
 Windows
 -------
 
-If you’re on Windows you’ll need to make sure you have OpenSSL installed. There are pre-compiled binaries available. If your installation is in an unusual location set the LIB and INCLUDE environment variables to include the corresponding locations. For example:
-
-C:\> set LIB=C:\OpenSSL-1.0.1f-64bit\lib;%LIB%
-C:\> set INCLUDE=C:\OpenSSL-1.0.1f-64bit\include;%INCLUDE%
+Currently Win32 version can't support SFTP (even with installed Paramiko), we 're trying to solve it.
 
 
 Linux
