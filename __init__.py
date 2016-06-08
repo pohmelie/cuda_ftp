@@ -45,6 +45,16 @@ def server_init_dir(server):
     return server.get("init_dir", "")
 
 
+def server_timeout(server):
+
+    s = server.get("timeout", "")
+    try:
+        n = int(s)
+        return s
+    except:
+        return '30'
+
+
 def server_port(server):
 
     s = server.get("port", "")
@@ -87,9 +97,10 @@ def dialog_server(init_server=None):
     _log = server_login(init_server) if init_server else "anonymous"
     _pwd = server_password(init_server) if init_server else "user@aol.com"
     _dir = server_init_dir(init_server) if init_server else ""
+    _tim = server_timeout(init_server) if init_server else ""
 
     res = dlg_input_ex(
-        6,
+        7,
         "FTP server info",
         "Type (ftp, sftp):", _typ,
         "Address (e.g. ftp.site.com):", _adr,
@@ -97,21 +108,22 @@ def dialog_server(init_server=None):
         "Login:", _log,
         "Password:", _pwd,
         "Initial remote dir:", _dir,
+        "Timeout (seconds):", _tim,
     )
 
     if not res:
 
         return
 
-    data = dict(zip(("type", "address", "port", "login", "password", "init_dir"), res))
+    data = dict(zip(("type", "address", "port", "login", "password", "init_dir", "timeout"), res))
     return data
 
 
 class SFTP:
 
-    def connect(self, address, port):
+    def connect(self, address, port, timeout=None):
 
-        self.sock = socket.create_connection((address, port))
+        self.sock = socket.create_connection((address, port), timeout=timeout)
         self.transport = paramiko.transport.Transport(self.sock)
 
     def login(self, username, password):
@@ -181,6 +193,8 @@ def CommonClient(server):
     schema = server_type(server)
     host = server_address(server)
     port = server_port(server)
+    timeout = server_timeout(server)
+    
     if schema == "sftp":
 
         if paramiko is None:
@@ -200,7 +214,7 @@ def CommonClient(server):
 
         raise Exception(str.format("Unknown schema: '{}'", schema))
 
-    client.connect(host, int(port))
+    client.connect(host, int(port), timeout=int(timeout))
     yield client
     client.quit()
 
