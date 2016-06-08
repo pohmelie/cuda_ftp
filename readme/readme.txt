@@ -1,7 +1,7 @@
 Plugin for CudaText.
-Allows to manage remote FTP files and directories.
-Plugin shows FTP panel in side panel, with context menu.
-Context menu items:
+Allows to manage remote FTP/SFTP files and directories.
+Plugin shows FTP panel in the side panel, with context menu.
+Context menu has commands:
 
 Empty list:
  - new server
@@ -22,12 +22,13 @@ For files:
  - open file (download and open in editor)
  - remove file
  
-File, which was downloaded and edited, will be uploaded, when "Save" command runs.
+Notes
 
-Notes:
+- File, which was downloaded and edited, will be uploaded, when "Save" command runs.
 - Config file is "[Cudatext]/settings/cuda_ftp.json"
-- No permanent connection to FTP is kept. Each request (read dir, download, upload...) 
-makes new connection, then closes connection.
+- No permanent connection to FTP is kept. Each request (read dir, download, upload...) makes new connection, then closes connection.
 
-Homepage:
-https://github.com/pohmelie/cuda_ftp
+Read separate text-file about SFTP support. For SFTP, Paramiko lib must be installed (on Linux and OSX).
+
+
+Homepage: https://github.com/pohmelie/cuda_ftp

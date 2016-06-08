@@ -1,4 +1,7 @@
 
+2016.06.08
++ support for SFTP, using Paramiko
+
 2016.06.04
 + ftp server prop "Init dir"
 
