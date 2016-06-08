@@ -315,25 +315,60 @@ class Command:
         app_proc(PROC_SIDEPANEL_ADD, self.title + ",-1,tree")
 
         self.tree = app_proc(PROC_SIDEPANEL_GET_CONTROL, self.title)
+        # clear tree
         tree_proc(self.tree, TREE_ITEM_DELETE, 0)
 
-    def show_panel(self, visible=True):
-
-        self.inited = True
-        self.init_panel()
-        self.init_options()
-
-        if visible:
-
-            app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
-
+        # load icons
         base = Path(__file__).parent
         for n in (NODE_SERVER, NODE_DIR, NODE_FILE):
 
             path = base / icon_names[n]
             tree_proc(self.tree, TREE_ICON_ADD, 0, 0, str(path))
 
+    def show_panel(self, activate=True):
+                            
+        if not self.inited:
+                                        
+            self.inited = True
+            self.init_panel()
+            self.init_options()
+
+        if activate:
+
+            ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
+            app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
+
         self.generate_context_menu()
+
+    def show_menu_connect(self):
+        
+        if not self.inited:
+            self.inited = True
+            self.init_panel()
+            self.init_options()
+            
+        menu_items = [server_list_caption(server) for server in self.options["servers"]]
+        res = dlg_menu(MENU_LIST, '\n'.join(menu_items))
+        if res is None:
+            return
+            
+        item_chosen = menu_items[res]
+        msg_status('Connect to: '+item_chosen)
+        self.show_panel(True)
+        
+        # find panel item for item_chosen
+        items = tree_proc(self.tree, TREE_ITEM_ENUM, 0)
+        if not items:
+            return
+        
+        for item in items:
+            item_handle = item[0]
+            item_caption = item[1]
+            if item_caption == item_chosen:
+                tree_proc(self.tree, TREE_ITEM_FOLD_DEEP, 0)
+                tree_proc(self.tree, TREE_ITEM_SELECT, item_handle)
+                self.action_refresh()
+                return
 
     @property
     def selected(self):
