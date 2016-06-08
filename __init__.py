@@ -97,13 +97,13 @@ def dialog_server(init_server=None):
     _log = server_login(init_server) if init_server else "anonymous"
     _pwd = server_password(init_server) if init_server else "user@aol.com"
     _dir = server_init_dir(init_server) if init_server else ""
-    _tim = server_timeout(init_server) if init_server else ""
+    _tim = server_timeout(init_server) if init_server else "30"
 
     res = dlg_input_ex(
         7,
         "FTP server info",
         "Type (ftp, sftp):", _typ,
-        "Address (e.g. ftp.site.com):", _adr,
+        "Host (e.g. ftp.site.com):", _adr,
         "Port (e.g. 21):", _prt,
         "Login:", _log,
         "Password:", _pwd,
@@ -200,7 +200,7 @@ def CommonClient(server):
         if paramiko is None:
 
             msg_box(
-                "Please install 'paramiko' for sftp support",
+                "Please install 'Paramiko' library for SFTP support",
                 MB_OK | MB_ICONERROR,
             )
 
@@ -212,7 +212,7 @@ def CommonClient(server):
 
     else:
 
-        raise Exception(str.format("Unknown schema: '{}'", schema))
+        raise Exception(str.format("Unknown server type: '{}'", schema))
 
     client.connect(host, int(port), timeout=int(timeout))
     yield client
