@@ -68,7 +68,12 @@ def server_type(server):
 
 def server_list_caption(server):
 
-    return str.format("{}@{}", server_address(server), server_login(server))
+    return str.format("{}://{}:{}@{}", 
+        server_type(server), 
+        server_address(server), 
+        server_port(server), 
+        server_login(server),
+    )
 
 
 
@@ -386,9 +391,11 @@ class Command:
 
     def get_server_by_short_info(self, address, login):
 
+        #print('Finding server:', address+'@'+login)
+
         for server in self.options["servers"]:
 
-            key = server_address(server), server_login(server)
+            key = server_type(server) + "://" + server_address(server) + ":" + server_port(server), server_login(server)
             if key == (address, login):
 
                 return server
