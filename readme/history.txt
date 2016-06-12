@@ -1,4 +1,7 @@
 
+2016.06.12
++ menuitem "Upload here" for dir/server
+
 2016.06.08
 + support for SFTP, Linux only
 + menu item in Plugins: Menu Connect
