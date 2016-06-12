@@ -1,3 +1,4 @@
+import os
 import collections
 import contextlib
 import json
@@ -291,11 +292,13 @@ class Command:
             "Go to...",
             "New file...",
             "New dir...",
+            "Upload here...",
             "Refresh",
         ),
         NODE_DIR: (
             "New file...",
             "New dir...",
+            "Upload here...",
             "Remove dir",
             "Refresh",
         ),
@@ -809,6 +812,20 @@ class Command:
         self.store_file(server, server_path / name, path)
         self.action_refresh()
 
+    def action_upload_here(self):
+
+        server, server_path, client_path = self.get_location_by_index(
+            self.selected)
+
+        path = os.path.dirname(ed.get_filename())
+        path = dlg_file(True, '', path, '')
+        if path is None:
+            return
+        
+        self.store_file(server, server_path / Path(os.path.basename(path)), Path(path))
+        self.action_refresh()   
+        
+        
     def remove_file(self, server, server_path, client_path):
 
         with CommonClient(server) as client:
