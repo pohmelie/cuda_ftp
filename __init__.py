@@ -8,6 +8,7 @@ import stat
 from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
 from datetime import datetime
+from .dlg import *
 
 try:
 
@@ -111,31 +112,18 @@ def dialog_server(init_server=None):
     """
 
     _typ = server_type(init_server) if init_server else "ftp"
-    _adr = server_address(init_server) if init_server else ""
-    _prt = server_port(init_server) if init_server else ""
-    _log = server_login(init_server) if init_server else "anonymous"
-    _pwd = server_password(init_server, False) if init_server else "user@aol.com"
+    _host = server_address(init_server) if init_server else ""
+    _port = server_port(init_server) if init_server else ""
+    _username = server_login(init_server) if init_server else "anonymous"
+    _pass = server_password(init_server, False) if init_server else "user@aol.com"
     _dir = server_init_dir(init_server) if init_server else ""
-    _tim = server_timeout(init_server) if init_server else "30"
+    _time = server_timeout(init_server) if init_server else "30"
     _lbl = server_label(init_server) if init_server else ""
 
-    res = dlg_input_ex(
-        8,
-        "FTP server info",
-        "Type (ftp, sftp):", _typ,
-        "Host (e.g. ftp.site.com):", _adr,
-        "Port (e.g. 21):", _prt,
-        "Username:", _log,
-        "Password (? - ask every time):", _pwd,
-        "Initial remote dir:", _dir,
-        "Timeout (seconds):", _tim,
-        "Label (for menu):", _lbl,
-    )
-
-    if not res:
-
+    res = dialog_server_props(_typ, _host, _port, _username, _pass, _dir, _time, _lbl)
+    if res is None:
         return
-
+        
     data = dict(zip((
         "type", 
         "address", 
