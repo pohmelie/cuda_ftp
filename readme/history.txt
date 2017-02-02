@@ -1,4 +1,8 @@
 
+2017.02.03
++ new dialog for server-info
++ masked input for password
+
 2016.06.12
 + menuitem "Upload here" for dir/server
 
