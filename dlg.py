@@ -1,6 +1,10 @@
 from cudatext import *
 
 def dialog_server_props(s_type, s_host, s_port, s_username, s_password, s_dir, s_timeout, s_label):
+
+    if app_api_version()<'1.0.165':
+        msg_box('FTP plugin needs newer app version', MB_OK+MB_ICONERROR)
+        return
     
     RES_TYPE_FTP = 1
     RES_TYPE_SFTP = 2
@@ -41,7 +45,7 @@ def dialog_server_props(s_type, s_host, s_port, s_username, s_password, s_dir, s
          +[c1.join(['type=spinedit', 'pos=180,216,240,0', 'props=1,120,1', 'val='+s_timeout])]
 
          +[c1.join(['type=label', 'pos=6,248,148,0', 'cap=Label (for menu):'])]
-         +[c1.join(['type=edit', 'pos=180,246,240,0', 'val='+s_label])]
+         +[c1.join(['type=spinedit', 'pos=180,246,240,0', 'props=1,6,1', 'val='+s_label])]
 
          +[c1.join(['type=button', 'pos=300,330,394,0', 'cap=&OK', 'props=1'])]
          +[c1.join(['type=button', 'pos=400,330,490,0', 'cap=Cancel'])]
