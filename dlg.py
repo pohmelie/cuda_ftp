@@ -60,8 +60,17 @@ def dialog_server_props(s_type, s_host, s_port, s_username, s_password, s_dir, s
             s_username = 'anonymous'
             s_password = 'user@aol.com'
             continue
-        elif res == RES_OK:
+            
+        if res == RES_OK:
+            test = s.splitlines()
+            if not test[RES_HOST]:
+                msg_box('Fill the Host field', MB_OK)
+                continue
+            if not test[RES_USERNAME]:
+                msg_box('Fill the Username field', MB_OK)
+                continue
             break
+            
         else:
             return
     
