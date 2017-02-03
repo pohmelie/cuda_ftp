@@ -60,7 +60,7 @@ def dialog_server_props(s_type, s_host, s_port, s_username, s_password, s_dir, s
         res, s = res
         s = s.splitlines()
         
-        s_type = 'ftp' if s[RES_TYPE_FTP=='1'] else 'sftp' if s[RES_TYPE_SFTP]=='1' else ''
+        s_type = 'ftp' if s[RES_TYPE_FTP]=='1' else 'sftp' if s[RES_TYPE_SFTP]=='1' else ''
         s_host = s[RES_HOST]
         s_port = s[RES_PORT]
         s_username = s[RES_USERNAME]
