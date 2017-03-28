@@ -1,4 +1,7 @@
 
+2017.03.28
++ don't use deprecated app_log() apis, use proc_bottompanel_ apis
+
 2017.02.03
 + new dialog for server-info
 + masked input for password
