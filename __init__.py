@@ -21,6 +21,11 @@ except ImportError:
 from cudatext import *
 import cudatext_cmd
 
+# Create panel in the bottom for logging
+TITLE_LOG = "FTP Log"
+app_proc(PROC_BOTTOMPANEL_ADD, TITLE_LOG+',-1,listbox,')
+app_proc(PROC_BOTTOMPANEL_ACTIVATE, TITLE_LOG) #good to show it once on start
+handle_log = app_proc(PROC_BOTTOMPANEL_GET_CONTROL, TITLE_LOG)
 
 # Show ftp exceptions in Console panel (download/upload/etc)
 # Not good since errors shown in FTP Log panel anyway
@@ -48,7 +53,7 @@ def server_password(server, can_input=True):
         s = pass_inputs.get(title, '')
         if s:
             return s
-            
+
         s = dlg_input('Password for {}:'.format(title), '')
         if not s:
             raise Exception('Password input cancelled')
@@ -90,24 +95,24 @@ def server_type(server):
     if not s in ('ftp', 'sftp'):
         s = 'ftp'
     return s
-    
-    
+
+
 def server_label(server):
     return server.get("label", "")
 
 
 def server_list_caption(server):
 
-    return str.format("{}://{}:{}@{}", 
-        server_type(server), 
-        server_address(server), 
-        server_port(server), 
+    return str.format("{}://{}:{}@{}",
+        server_type(server),
+        server_address(server),
+        server_port(server),
         server_login(server),
     )
 
 
 def dialog_server(init_server=None):
-    """ 
+    """
     Must give dict, which can be parsed by server_nnnnn(), or None
     """
 
@@ -123,14 +128,14 @@ def dialog_server(init_server=None):
     res = dialog_server_props(_typ, _host, _port, _username, _pass, _dir, _time, _lbl)
     if res is None:
         return
-        
+
     data = dict(zip((
-        "type", 
-        "address", 
-        "port", 
-        "login", 
-        "password", 
-        "init_dir", 
+        "type",
+        "address",
+        "port",
+        "login",
+        "password",
+        "init_dir",
         "timeout",
         "label",
         ), res))
@@ -212,7 +217,7 @@ def CommonClient(server):
     host = server_address(server)
     port = server_port(server)
     timeout = server_timeout(server)
-    
+
     if schema == "sftp":
 
         if paramiko is None:
@@ -239,16 +244,13 @@ def CommonClient(server):
 
 def show_log(str1, str2):
 
-    title = "FTP Log"
     time_fmt = "[%H:%M] "
     time_str = datetime.now().strftime(time_fmt)
-    ed.cmd(cudatext_cmd.cmd_ShowPanelOutput)
-    app_log(LOG_PANEL_ADD, title)
-    app_log(LOG_PANEL_FOCUS, title)
-    app_log(LOG_SET_PANEL, title)
-    app_log(LOG_ADD, time_str + str1 + ": " + str2)
-    lines = app_log(LOG_GET_LINES, "").split("\n")
-    app_log(LOG_SET_LINEINDEX, str(len(lines)-1))
+    text_log = time_str + str1 + ": " + str2
+
+    listbox_proc(handle_log, LISTBOX_ADD, index=-1, text=text_log)
+    cnt = listbox_proc(handle_log, LISTBOX_GET_COUNT)
+    listbox_proc(handle_log, LISTBOX_SET_SEL, index=cnt-1)
 
 
 NODE_SERVER = 0
@@ -332,9 +334,9 @@ class Command:
             tree_proc(self.tree, TREE_ICON_ADD, 0, 0, str(path))
 
     def show_panel(self, activate=True):
-                            
+
         if not self.inited:
-                                        
+
             self.inited = True
             self.init_panel()
             self.init_options()
@@ -347,36 +349,36 @@ class Command:
         self.generate_context_menu()
 
     def show_menu_connect(self):
-        
+
         if not self.inited:
-        
+
             self.inited = True
             self.init_panel()
             self.init_options()
-            
+
         menu_items = [server_list_caption(server) for server in self.options["servers"]]
         res = dlg_menu(MENU_LIST, '\n'.join(menu_items))
         if res is None:
             return
-            
+
         self.connect_by_caption(menu_items[res])
-    
+
     def connect_by_caption(self, item_chosen):
-    
+
         msg_status('Connect to: '+item_chosen, True)
         self.show_panel(True)
-        
+
         # find panel item for item_chosen
         items = tree_proc(self.tree, TREE_ITEM_ENUM, 0)
         if not items:
             return
-        
+
         for item in items:
-        
+
             item_handle = item[0]
             item_caption = item[1]
             if item_caption == item_chosen:
-            
+
                 tree_proc(self.tree, TREE_ITEM_FOLD_DEEP, 0)
                 tree_proc(self.tree, TREE_ITEM_SELECT, item_handle)
                 self.action_refresh()
@@ -386,21 +388,21 @@ class Command:
     def connect_label(self, label):
 
         if not self.inited:
-        
+
             self.inited = True
             self.init_panel()
             self.init_options()
 
         for server in self.options["servers"]:
             if server_label(server)==label:
-        
+
                 self.connect_by_caption(server_list_caption(server))
                 return
-            
+
         else:
-        
+
             msg_status('Cannot find server with label "{}"'.format(label))
-            
+
 
     def connect_label_1(self): self.connect_label('1')
     def connect_label_2(self): self.connect_label('2')
@@ -554,10 +556,10 @@ class Command:
         short_info = str.split(self.get_info(index).caption, "@")
         server = self.get_server_by_short_info(*short_info)
         prefix = pathlib.Path(
-            server_type(server), 
+            server_type(server),
             server_address(server),
             server_port(server)
-            )            
+            )
         client_path = (
             self.temp_dir_path / prefix /
             server_login(server) / server_path.relative_to("/")
@@ -809,11 +811,11 @@ class Command:
         path = dlg_file(True, '', path, '')
         if path is None:
             return
-        
+
         self.store_file(server, server_path / Path(os.path.basename(path)), Path(path))
-        self.action_refresh()   
-        
-        
+        self.action_refresh()
+
+
     def remove_file(self, server, server_path, client_path):
 
         with CommonClient(server) as client:
