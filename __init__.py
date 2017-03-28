@@ -24,7 +24,6 @@ import cudatext_cmd
 # Create panel in the bottom for logging
 TITLE_LOG = "FTP Log"
 app_proc(PROC_BOTTOMPANEL_ADD, TITLE_LOG+',-1,listbox,')
-app_proc(PROC_BOTTOMPANEL_ACTIVATE, TITLE_LOG) #good to show it once on start
 handle_log = app_proc(PROC_BOTTOMPANEL_GET_CONTROL, TITLE_LOG)
 
 # Show ftp exceptions in Console panel (download/upload/etc)
@@ -246,9 +245,13 @@ def show_log(str1, str2):
 
     time_fmt = "[%H:%M] "
     time_str = datetime.now().strftime(time_fmt)
-    text_log = time_str + str1 + ": " + str2
+    text = time_str + str1 + ": " + str2
 
-    listbox_proc(handle_log, LISTBOX_ADD, index=-1, text=text_log)
+    app_proc(PROC_BOTTOMPANEL_ACTIVATE, TITLE_LOG)
+    # prev line steals focus from editor on save
+    ed.focus()
+
+    listbox_proc(handle_log, LISTBOX_ADD, index=-1, text=text)
     cnt = listbox_proc(handle_log, LISTBOX_GET_COUNT)
     listbox_proc(handle_log, LISTBOX_SET_SEL, index=cnt-1)
 
