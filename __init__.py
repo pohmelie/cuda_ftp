@@ -23,8 +23,13 @@ import cudatext_cmd
 
 # Create panel in the bottom for logging
 TITLE_LOG = "FTP Log"
-app_proc(PROC_BOTTOMPANEL_ADD, TITLE_LOG+',-1,listbox,')
-handle_log = app_proc(PROC_BOTTOMPANEL_GET_CONTROL, TITLE_LOG)
+handle_log = 0
+
+def init_log():
+    global handle_log
+    if handle_log: return
+    app_proc(PROC_BOTTOMPANEL_ADD, TITLE_LOG+',-1,listbox,')
+    handle_log = app_proc(PROC_BOTTOMPANEL_GET_CONTROL, TITLE_LOG)
 
 # Show ftp exceptions in Console panel (download/upload/etc)
 # Not good since errors shown in FTP Log panel anyway
@@ -322,6 +327,7 @@ class Command:
 
     def init_panel(self):
 
+        init_log()
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
         app_proc(PROC_SIDEPANEL_ADD, self.title + ",-1,tree")
 
