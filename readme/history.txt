@@ -1,4 +1,7 @@
 
+2017.05.05
+- fix: app blinks at left side on 1st saving of any file
+
 2017.03.28
 + don't use deprecated app_log() apis, use proc_bottompanel_ apis
 
