@@ -28,8 +28,21 @@ handle_log = 0
 def init_log():
     global handle_log
     if handle_log: return
-    app_proc(PROC_BOTTOMPANEL_ADD, TITLE_LOG+',-1,listbox,')
-    handle_log = app_proc(PROC_BOTTOMPANEL_GET_CONTROL, TITLE_LOG)
+    
+    h_dlg = dlg_proc(0, DLG_CREATE)
+
+    n = dlg_proc(h_dlg, DLG_CTL_ADD, prop='listbox_ex')
+    dlg_proc(h_dlg, DLG_CTL_PROP_SET, index=n, prop={
+        'name':'list',
+        'a_r':('',']'), #anchor to entire form: l,r,t,b
+        'a_b':('',']'),
+        } )
+
+    handle_log = dlg_proc(h_dlg, DLG_CTL_HANDLE, index=n)
+    listbox_proc(handle_log, LISTBOX_THEME)
+
+    app_proc(PROC_BOTTOMPANEL_ADD_DIALOG, (TITLE_LOG, h_dlg, 'ftp log.png'))
+    
 
 # Show ftp exceptions in Console panel (download/upload/etc)
 # Not good since errors shown in FTP Log panel anyway
