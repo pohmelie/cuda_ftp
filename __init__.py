@@ -266,9 +266,9 @@ NODE_DIR = 1
 NODE_FILE = 2
 
 icon_names = {
-    NODE_SERVER: "cuda-ftp-icon-server.png",
-    NODE_DIR: "cuda-ftp-icon-directory.png",
-    NODE_FILE: "cuda-ftp-icon-file.png",
+    NODE_SERVER: "server.png",
+    NODE_DIR: "dir.png",
+    NODE_FILE: "file.png",
 }
 
 
@@ -282,7 +282,7 @@ class Command:
     tree = None
     h_dlg = None
     h_menu = None
-    
+
     actions = {
         None: (
             "New server",
@@ -333,29 +333,29 @@ class Command:
 
         init_log()
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
-      
+
         self.h_dlg = dlg_proc(0, DLG_CREATE)
-        
+
         n = dlg_proc(self.h_dlg, DLG_CTL_ADD, prop='treeview')
         dlg_proc(self.h_dlg, DLG_CTL_PROP_SET, index=n, prop={
-            'name':'tree', 
+            'name':'tree',
             'a_r':('',']'), #anchor to entire form: l,r,t,b
             'a_b':('',']'),
-            'on_menu': 'cuda_ftp.tree_on_menu',  
-            'on_click_dbl': 'cuda_ftp.tree_on_click_dbl',  
+            'on_menu': 'cuda_ftp.tree_on_menu',
+            'on_click_dbl': 'cuda_ftp.tree_on_click_dbl',
             } )
 
         self.tree = dlg_proc(self.h_dlg, DLG_CTL_HANDLE, index=n)
         tree_proc(self.tree, TREE_THEME)
         tree_proc(self.tree, TREE_PROP_SHOW_ROOT, text='0')
-        
+
         app_proc(PROC_SIDEPANEL_ADD_DIALOG, (self.title, self.h_dlg, 'ftp.png'))
 
         # load icons
         base = Path(__file__).parent
         for n in (NODE_SERVER, NODE_DIR, NODE_FILE):
 
-            path = base / icon_names[n]
+            path = base / 'icons' / icon_names[n]
             tree_proc(self.tree, TREE_ICON_ADD, 0, 0, str(path))
 
     def show_panel(self, activate=True):
@@ -450,7 +450,7 @@ class Command:
         if not self.h_menu:
             self.h_menu = menu_proc(0, MENU_CREATE)
         menu_proc(self.h_menu, MENU_CLEAR)
-        
+
         if self.selected is not None:
             i = self.get_info(self.selected).image
         else:
@@ -932,7 +932,7 @@ class Command:
     def tree_on_menu(self, id_dlg, id_ctl, data='', info=''):
         self.generate_context_menu()
         menu_proc(self.h_menu, MENU_SHOW, command='')
-        
+
     def tree_on_click_dbl(self, id_dlg, id_ctl, data='', info=''):
         info = self.get_info(self.selected)
         if info.image in (NODE_SERVER, NODE_DIR):
