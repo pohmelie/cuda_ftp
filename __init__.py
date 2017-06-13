@@ -432,7 +432,7 @@ class Command:
     def generate_context_menu(self):
 
         side_name = "side:" + self.title
-        app_proc(PROC_MENU_CLEAR, side_name)
+        menu_proc(side_name, MENU_CLEAR)
         if self.selected is not None:
 
             i = self.get_info(self.selected).image
@@ -444,13 +444,13 @@ class Command:
         for name in self.actions[i]:
 
             action_name = name.lower().replace(" ", "_").rstrip(".")
-            desc = str.format(
-                "{};cuda_ftp,{};{};-1",
-                side_name,
-                "action_" + action_name,
-                name,
-            )
-            app_proc(PROC_MENU_ADD, desc)
+            #desc = str.format(
+            #    "{};cuda_ftp,{};{};-1",
+            #    side_name,
+            #    ,
+            #    name,
+            #)
+            menu_proc(side_name, MENU_ADD, command="cuda_ftp.action_" + action_name, caption=name)
 
     def store_file(self, server, server_path, client_path):
 
