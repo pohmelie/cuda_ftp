@@ -277,8 +277,12 @@ NodeInfo = collections.namedtuple("NodeInfo", "caption index image level")
 
 class Command:
 
-    inited = False
     title = "FTP"
+    inited = False
+    tree = None
+    h_dlg = None
+    h_menu = None
+    
     actions = {
         None: (
             "New server",
@@ -329,11 +333,23 @@ class Command:
 
         init_log()
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
-        app_proc(PROC_SIDEPANEL_ADD, self.title + ",-1,tree")
+      
+        self.h_dlg = dlg_proc(0, DLG_CREATE)
+        
+        n = dlg_proc(self.h_dlg, DLG_CTL_ADD, prop='treeview')
+        dlg_proc(self.h_dlg, DLG_CTL_PROP_SET, index=n, prop={
+            'name':'tree', 
+            'a_r':('',']'), #anchor to entire form: l,r,t,b
+            'a_b':('',']'),
+            'on_menu': 'cuda_ftp.tree_on_menu',  
+            'on_click_dbl': 'cuda_ftp.tree_on_click_dbl',  
+            } )
 
-        self.tree = app_proc(PROC_SIDEPANEL_GET_CONTROL, self.title)
-        # clear tree
-        tree_proc(self.tree, TREE_ITEM_DELETE, 0)
+        self.tree = dlg_proc(self.h_dlg, DLG_CTL_HANDLE, index=n)
+        tree_proc(self.tree, TREE_THEME)
+        tree_proc(self.tree, TREE_PROP_SHOW_ROOT, text='0')
+        
+        app_proc(PROC_SIDEPANEL_ADD_DIALOG, (self.title, self.h_dlg, 'ftp.png'))
 
         # load icons
         base = Path(__file__).parent
@@ -431,20 +447,19 @@ class Command:
 
     def generate_context_menu(self):
 
-        side_name = "side:" + self.title
-        menu_proc(side_name, MENU_CLEAR)
+        if not self.h_menu:
+            self.h_menu = menu_proc(0, MENU_CREATE)
+        menu_proc(self.h_menu, MENU_CLEAR)
+        
         if self.selected is not None:
-
             i = self.get_info(self.selected).image
-
         else:
-
             i = None
 
         for name in self.actions[i]:
 
             action_name = name.lower().replace(" ", "_").rstrip(".")
-            menu_proc(side_name, MENU_ADD, command="cuda_ftp.action_" + action_name, caption=name)
+            menu_proc(self.h_menu, MENU_ADD, command="cuda_ftp.action_" + action_name, caption=name)
 
     def store_file(self, server, server_path, client_path):
 
@@ -649,27 +664,6 @@ class Command:
             return
 
         self.store_file(*self.get_location_by_filename(filename))
-
-    def on_panel(self, ed_self, id_control, id_event):
-
-        if not self.inited or id_control != self.tree:
-
-            return
-
-        if id_event == "on_sel":
-
-            self.generate_context_menu()
-
-        elif id_event == "on_dbl_click":
-
-            info = self.get_info(self.selected)
-            if info.image in (NODE_SERVER, NODE_DIR):
-
-                self.action_refresh()
-
-            elif info.image == NODE_FILE:
-
-                self.action_open_file()
 
     def action_new_server(self, server=None):
 
@@ -933,3 +927,15 @@ class Command:
     def is_selected_server(self):
         info = self.get_info(self.selected)
         return info.image == NODE_SERVER
+
+
+    def tree_on_menu(self, id_dlg, id_ctl, data='', info=''):
+        self.generate_context_menu()
+        menu_proc(self.h_menu, MENU_SHOW, command='')
+        
+    def tree_on_click_dbl(self, id_dlg, id_ctl, data='', info=''):
+        info = self.get_info(self.selected)
+        if info.image in (NODE_SERVER, NODE_DIR):
+            self.action_refresh()
+        elif info.image == NODE_FILE:
+            self.action_open_file()

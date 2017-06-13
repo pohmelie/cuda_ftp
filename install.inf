@@ -7,7 +7,7 @@ homepage=https://github.com/pohmelie/cuda_ftp
 
 [item1]
 section=events
-events=on_save,on_panel
+events=on_save
 
 [item2]
 section=commands
