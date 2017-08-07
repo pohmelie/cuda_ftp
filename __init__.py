@@ -28,7 +28,7 @@ handle_log = 0
 def init_log():
     global handle_log
     if handle_log: return
-    
+
     h_dlg = dlg_proc(0, DLG_CREATE)
 
     n = dlg_proc(h_dlg, DLG_CTL_ADD, prop='listbox_ex')
@@ -42,7 +42,7 @@ def init_log():
     listbox_proc(handle_log, LISTBOX_THEME)
 
     app_proc(PROC_BOTTOMPANEL_ADD_DIALOG, (TITLE_LOG, h_dlg, 'ftp log.png'))
-    
+
 
 # Show ftp exceptions in Console panel (download/upload/etc)
 # Not good since errors shown in FTP Log panel anyway
@@ -359,6 +359,7 @@ class Command:
             } )
 
         self.tree = dlg_proc(self.h_dlg, DLG_CTL_HANDLE, index=n)
+        self.tree_imglist = tree_proc(self.tree, TREE_GET_IMAGELIST)
         tree_proc(self.tree, TREE_THEME)
         tree_proc(self.tree, TREE_PROP_SHOW_ROOT, text='0')
 
@@ -369,7 +370,7 @@ class Command:
         for n in (NODE_SERVER, NODE_DIR, NODE_FILE):
 
             path = base / 'icons' / icon_names[n]
-            tree_proc(self.tree, TREE_ICON_ADD, 0, 0, str(path))
+            imagelist_proc(self.tree_imglist, IMAGELIST_ADD, value=path)
 
     def show_panel(self, activate=True):
 

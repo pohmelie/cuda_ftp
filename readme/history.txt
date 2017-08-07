@@ -1,6 +1,9 @@
 
+2017.08.07
+- avoid deprecated APIs
+
 2017.06.15
-+ don't use deprecated APIs
+- don't use deprecated APIs
 * moved icon files to sub-dir
 
 2017.05.05
