@@ -194,6 +194,62 @@ class SFTP:
         self.sftp.remove(path)
 
 
+def parse_list_line(b, encoding="utf-8"):
+    """
+    Attempt to parse a LIST line (just type and name).
+
+    :param b: response line
+    :type b: :py:class:`bytes` or :py:class:`str`
+
+    :param encoding: encoding to use
+    :type encoding: :py:class:`str`
+
+    :return: (path, info)
+    :rtype: (:py:class:`pathlib.PurePosixPath`, :py:class:`dict`)
+    """
+    if isinstance(b, bytes):
+        s = b.decode(encoding=encoding)
+    else:
+        s = b
+    s = s.rstrip()
+    info = {}
+    if s[0] == "-":
+        info["type"] = "file"
+    elif s[0] == "d":
+        info["type"] = "dir"
+    elif s[0] == "l":
+        info["type"] = "link"
+    else:
+        info["type"] = "unknown"
+
+    s = s[10:].lstrip()
+    for _ in range(4):
+        i = s.index(" ")
+        s = s[i:].lstrip()
+    s = s[12:].strip()
+    if info["type"] == "link":
+        i = s.rindex(" -> ")
+        s = s[:i]
+    return PurePosixPath(s), info
+
+
+class FTP_:
+
+    def __init__(self):
+        self._ftp = FTP()
+
+    def __getattr__(self, name):
+        return getattr(self._ftp, name)
+
+    def mlsd(self, path):
+        print("here")
+        paths = []
+        self._ftp.retrlines("LIST {}".format(path), callback=paths.append)
+        print(paths)
+        for path in paths:
+            yield parse_list_line(path)
+
+
 @contextlib.contextmanager
 def CommonClient(server):
     address = server_address(server)
@@ -533,7 +589,7 @@ class Command:
                 TREE_ITEM_ADD,
                 node_index,
                 -1,
-                name,
+                str(name),
                 NodeType
             )
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, node_index)
