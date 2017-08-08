@@ -1,5 +1,6 @@
 
-2017.08.07
+2017.08.08
++ option in server properties: "Use old LIST command"
 - avoid deprecated APIs
 
 2017.06.15

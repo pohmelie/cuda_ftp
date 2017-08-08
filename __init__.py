@@ -107,6 +107,10 @@ def server_label(server):
     return server.get("label", "")
 
 
+def server_use_list(server):
+    return server.get("use_list", "")
+
+
 def server_list_caption(server):
     return "{}://{}:{}@{}".format(
         server_type(server),
@@ -127,9 +131,10 @@ def dialog_server(init_server=None):
     _pass = server_password(init_server, False) if init_server else "user@aol.com"
     _dir = server_init_dir(init_server) if init_server else ""
     _time = server_timeout(init_server) if init_server else "30"
-    _lbl = server_label(init_server) if init_server else ""
+    _label = server_label(init_server) if init_server else ""
+    _uselist = server_use_list(init_server) if init_server else ""
 
-    res = dialog_server_props(_typ, _host, _port, _username, _pass, _dir, _time, _lbl)
+    res = dialog_server_props(_typ, _host, _port, _username, _pass, _dir, _time, _label, _uselist)
     if res is None:
         return
 
@@ -142,6 +147,7 @@ def dialog_server(init_server=None):
         "init_dir",
         "timeout",
         "label",
+        "use_list"
         ), res))
     return data
 
@@ -234,6 +240,7 @@ def parse_list_line(b, encoding="utf-8"):
 
 
 class FTP_:
+    use_list = False
 
     def __init__(self):
         self._ftp = FTP()
@@ -242,12 +249,30 @@ class FTP_:
         return getattr(self._ftp, name)
 
     def mlsd(self, path):
-        print("here")
-        paths = []
-        self._ftp.retrlines("LIST {}".format(path), callback=paths.append)
-        print(paths)
-        for path in paths:
-            yield parse_list_line(path)
+        if self.use_list:
+            show_log('Using old LIST command', str(path))
+            paths = []
+            self._ftp.retrlines("LIST {}".format(path), callback=paths.append)
+            #print(paths)
+            for path in paths:
+                yield parse_list_line(path)
+
+        else:
+            # Copied code of FTP.mlsd()
+            CRLF = '\r\n'
+            if path:
+                cmd = "MLSD %s" % path
+            else:
+                cmd = "MLSD"
+            lines = []
+            self.retrlines(cmd, lines.append)
+            for line in lines:
+                facts_found, _, name = line.rstrip(CRLF).partition(' ')
+                entry = {}
+                for fact in facts_found[:-1].split(";"):
+                    key, _, value = fact.partition("=")
+                    entry[key.lower()] = value
+                yield (name, entry)
 
 
 @contextlib.contextmanager
@@ -266,6 +291,7 @@ def CommonClient(server):
         client = SFTP()
     elif schema == "ftp":
         client = FTP_()
+        client.use_list = bool(server_use_list(server))
     else:
         raise Exception("Unknown server type: '{}'".format(schema))
 
