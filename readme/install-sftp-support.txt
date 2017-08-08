@@ -28,8 +28,8 @@ sudo pip3 install cryptography
 sudo pip3 install paramiko
 
 
-OS X
--------
+macOS
+-----
 
 In terminal run:
 

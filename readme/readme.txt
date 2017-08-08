@@ -28,7 +28,10 @@ Notes
 - Config file is "[Cudatext]/settings/cuda_ftp.json"
 - No permanent connection to FTP is kept. Each request (read dir, download, upload...) makes new connection, then closes connection.
 
-Read separate text-file about SFTP support. For SFTP, Paramiko lib must be installed (on Linux and OSX).
+Read separate text-file about SFTP support.
+For SFTP, Paramiko lib must be installed (on Linux and macOS).
 
 
+Authors: @pohmelie, Alexey T.
+License: MIT
 Homepage: https://github.com/pohmelie/cuda_ftp
