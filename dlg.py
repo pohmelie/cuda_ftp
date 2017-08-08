@@ -23,7 +23,7 @@ def dialog_server_props(s_type, s_host, s_port,
 
     c1 = chr(1)
     while True:
-        res = dlg_custom('FTP server info', 496, 360,
+        res = dlg_custom('FTP server info', 496, 380,
           '\n'.join([]
              +[c1.join(['type=label', 'pos=6,8,190,0', 'cap=Server type:'])]
              +[c1.join(['type=radio', 'pos=180,6,250,0', 'cap=FTP', 'val='+('1' if s_type=='ftp' else '0') ])]
@@ -52,10 +52,10 @@ def dialog_server_props(s_type, s_host, s_port,
              +[c1.join(['type=label', 'pos=6,278,148,0', 'cap=Label (for menu):'])]
              +[c1.join(['type=spinedit', 'pos=180,276,240,0', 'props=1,6,1', 'val='+s_label])]
 
-             +[c1.join(['type=check', 'pos=6,308,148,0', 'cap=Use old LIST command', 'val='+('1' if s_uselist else '0') ])]
+             +[c1.join(['type=check', 'pos=6,308,300,0', 'cap=Use old LIST command', 'val='+('1' if s_uselist else '0') ])]
 
-             +[c1.join(['type=button', 'pos=300,330,394,0', 'cap=&OK', 'props=1'])]
-             +[c1.join(['type=button', 'pos=400,330,490,0', 'cap=Cancel'])]
+             +[c1.join(['type=button', 'pos=300,350,394,0', 'cap=&OK', 'props=1'])]
+             +[c1.join(['type=button', 'pos=400,350,490,0', 'cap=Cancel'])]
           ) )
         if res is None: return
         res, s = res
