@@ -52,7 +52,7 @@ def dialog_server_props(s_type, s_host, s_port,
              +[c1.join(['type=label', 'pos=6,278,148,0', 'cap=Label (for menu):'])]
              +[c1.join(['type=spinedit', 'pos=180,276,240,0', 'props=1,6,1', 'val='+s_label])]
 
-             +[c1.join(['type=check', 'pos=6,308,148,0', 'cap=Use old LIST command', 'val='+s_uselist])]
+             +[c1.join(['type=check', 'pos=6,308,148,0', 'cap=Use old LIST command', 'val='+('1' if s_uselist else '0') ])]
 
              +[c1.join(['type=button', 'pos=300,330,394,0', 'cap=&OK', 'props=1'])]
              +[c1.join(['type=button', 'pos=400,330,490,0', 'cap=Cancel'])]
@@ -69,7 +69,7 @@ def dialog_server_props(s_type, s_host, s_port,
         s_dir = s[RES_DIR]
         s_timeout = s[RES_TIMEOUT]
         s_label = s[RES_LABEL]
-        s_uselist = s[RES_USELIST]
+        s_uselist = s[RES_USELIST]=='1'
 
         if res == RES_PASS_DEFAULT:
             s_username = 'anonymous'

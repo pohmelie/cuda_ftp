@@ -108,7 +108,7 @@ def server_label(server):
 
 
 def server_use_list(server):
-    return server.get("use_list", "")
+    return server.get("use_list", False)
 
 
 def server_list_caption(server):
@@ -132,7 +132,7 @@ def dialog_server(init_server=None):
     _dir = server_init_dir(init_server) if init_server else ""
     _time = server_timeout(init_server) if init_server else "30"
     _label = server_label(init_server) if init_server else ""
-    _uselist = server_use_list(init_server) if init_server else ""
+    _uselist = server_use_list(init_server) if init_server else False
 
     res = dialog_server_props(_typ, _host, _port, _username, _pass, _dir, _time, _label, _uselist)
     if res is None:
@@ -166,7 +166,7 @@ class SFTP:
         self.sftp.close()
         self.transport.close()
 
-    def mlsd(self, path):
+    def mlsd(self, path, use_list=False):
         for info in self.sftp.listdir_iter(str(path)):
             if stat.S_ISDIR(info.st_mode):
                 yield info.filename, dict(type="dir", size=info.st_size)
@@ -240,16 +240,14 @@ def parse_list_line(b, encoding="utf-8"):
 
 
 class FTP_:
-    use_list = False
-
     def __init__(self):
         self._ftp = FTP()
 
     def __getattr__(self, name):
         return getattr(self._ftp, name)
 
-    def mlsd(self, path):
-        if self.use_list:
+    def mlsd(self, path, use_list=False):
+        if use_list:
             show_log('Using old LIST command', str(path))
             paths = []
             self._ftp.retrlines("LIST {}".format(path), callback=paths.append)
@@ -258,7 +256,7 @@ class FTP_:
                 yield parse_list_line(path)
 
         else:
-            # Copied code of FTP.mlsd()
+            # Copied code of FTP.mlsd
             CRLF = '\r\n'
             if path:
                 cmd = "MLSD %s" % path
@@ -291,7 +289,6 @@ def CommonClient(server):
         client = SFTP()
     elif schema == "ftp":
         client = FTP_()
-        client.use_list = bool(server_use_list(server))
     else:
         raise Exception("Unknown server type: '{}'".format(schema))
 
@@ -593,7 +590,7 @@ class Command:
             with CommonClient(server) as client:
                 client.login(server_login(server), server_password(server))
                 path_list = sorted(
-                    client.mlsd(server_path),
+                    client.mlsd(server_path, server_use_list(server)),
                     key=lambda p: (p[1]["type"], p[0])
                 )
         except Exception as ex:
@@ -784,7 +781,11 @@ class Command:
     def remove_directory_recursive(self, client, path):
         if app_proc(PROC_GET_ESCAPE, ""):
             raise Exception("Stopped by user")
-        for name, facts in tuple(client.mlsd(path)):
+
+        server, server_path, client_path = self.get_location_by_index(
+            self.selected)
+
+        for name, facts in tuple(client.mlsd(path, server_use_list(server))):
             if facts["type"] == "dir":
                 msg_status("Removing ftp dir: " + str(path / name), True)
                 self.remove_directory_recursive(client, path / name)
