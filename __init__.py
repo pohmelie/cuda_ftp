@@ -248,7 +248,7 @@ class FTP_:
 
     def mlsd(self, path, use_list=False):
         if use_list:
-            show_log('Using old LIST command', str(path))
+            #show_log('Using old LIST command', str(path))
             paths = []
             self._ftp.retrlines("LIST {}".format(path), callback=paths.append)
             #print(paths)
