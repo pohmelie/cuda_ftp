@@ -390,6 +390,7 @@ class Command:
         tree_proc(self.tree, TREE_THEME)
         tree_proc(self.tree, TREE_PROP_SHOW_ROOT, text='0')
 
+        dlg_proc(self.h_dlg, DLG_SCALE)
         app_proc(PROC_SIDEPANEL_ADD_DIALOG, (self.title, self.h_dlg, 'ftp.png'))
 
         # load icons
