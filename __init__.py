@@ -37,7 +37,9 @@ def init_log():
         } )
 
     handle_log = dlg_proc(h_dlg, DLG_CTL_HANDLE, index=n)
-    listbox_proc(handle_log, LISTBOX_THEME)
+
+    dlg_proc(h_dlg, DLG_SCALE)
+    listbox_proc(handle_log, LISTBOX_THEME) #THEME after DLG_SCALE
 
     app_proc(PROC_BOTTOMPANEL_ADD_DIALOG, (TITLE_LOG, h_dlg, 'ftp log.png'))
 
@@ -387,10 +389,11 @@ class Command:
 
         self.tree = dlg_proc(self.h_dlg, DLG_CTL_HANDLE, index=n)
         self.tree_imglist = tree_proc(self.tree, TREE_GET_IMAGELIST)
-        tree_proc(self.tree, TREE_THEME)
         tree_proc(self.tree, TREE_PROP_SHOW_ROOT, text='0')
 
         dlg_proc(self.h_dlg, DLG_SCALE)
+        tree_proc(self.tree, TREE_THEME) #TREE_THEME after DLG_SCALE
+
         app_proc(PROC_SIDEPANEL_ADD_DIALOG, (self.title, self.h_dlg, 'ftp.png'))
 
         # load icons
