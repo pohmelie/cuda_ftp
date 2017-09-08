@@ -1,8 +1,8 @@
 Windows
 -------
 
-Currently Windows version can't support SFTP, we 're trying to solve it.
-We cannot install Paramiko in a portable way.
+Windows 64-bit: you must install plugin "SFTP support for Windows 64-bit", it installs Paramiko and all other libs to dir "py\cuda_ftp_libs", it will be used by FTP plugin.
+Windows 32-bit: additional plugin will be ready soon...
 
 
 Linux
