@@ -1,6 +1,6 @@
 [info]
 title=FTP
-desc=Allows to open/save/remove/etc files/folders on FTP servers
+desc=Allows to handle remote files/folders on FTP+SFTP servers. Read text file about SFTP support.
 type=cudatext-plugin
 subdir=cuda_ftp
 homepage=https://github.com/pohmelie/cuda_ftp
