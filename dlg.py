@@ -27,7 +27,7 @@ def dialog_server_props(s_type, s_host, s_port,
           '\n'.join([]
              +[c1.join(['type=label', 'pos=6,8,190,0', 'cap=Server type:'])]
              +[c1.join(['type=radio', 'pos=180,6,250,0', 'cap=FTP', 'val='+('1' if s_type=='ftp' else '0') ])]
-             +[c1.join(['type=radio', 'pos=250,6,350,0', 'cap=SFTP', 'val='+('1' if s_type=='sftp' else '0'), 'en='+('1' if is_unix else '0') ])]
+             +[c1.join(['type=radio', 'pos=250,6,350,0', 'cap=SFTP', 'val='+('1' if s_type=='sftp' else '0') ])]
 
              +[c1.join(['type=label', 'pos=6,38,148,0', 'cap=Host (e.g. ftp.site.com):'])]
              +[c1.join(['type=edit', 'pos=180,36,490,0', 'val='+s_host])]

@@ -1,3 +1,4 @@
+import sys
 import os
 import collections
 import contextlib
@@ -9,6 +10,10 @@ from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
 from datetime import datetime
 from .dlg import *
+
+#for Windows, need portable installation of Paramiko+others
+if os.name=='nt':
+    sys.path.append( app_path(APP_DIR_PY)+os.sep+'cuda_ftp_libs' )
 
 try:
     import paramiko

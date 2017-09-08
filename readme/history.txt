@@ -1,4 +1,7 @@
 
+2017.09.09
++ added usage of SFTP libs on Windows, if additional plugin "SFTP support" is installed
+
 2017.09.01
 - fix: must scale dialog for high-dpi
 
