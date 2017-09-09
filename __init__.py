@@ -1,5 +1,6 @@
 import sys
 import os
+import platform
 import collections
 import contextlib
 import json
@@ -11,9 +12,13 @@ from .pathlib import Path, PurePosixPath
 from datetime import datetime
 from .dlg import *
 
-#for Windows, need portable installation of Paramiko+others
+#for Windows, use portable installation of Paramiko+others
 if os.name=='nt':
-    sys.path.append( app_path(APP_DIR_PY)+os.sep+'cuda_ftp_libs' )
+    if platform.architecture() == '32bit':
+        dirname = 'x32'
+    else:
+        dirname = 'x64'
+    sys.path.append( app_path(APP_DIR_PY)+os.sep+'cuda_ftp_libs'+os.sep+dirname )
 
 try:
     import paramiko
