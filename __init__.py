@@ -14,11 +14,11 @@ from .dlg import *
 
 #for Windows, use portable installation of Paramiko+others
 if os.name=='nt':
-    if platform.architecture() == '32bit':
+    if platform.architecture()[0] == '32bit':
         dirname = 'x32'
     else:
         dirname = 'x64'
-    sys.path.append( app_path(APP_DIR_PY)+os.sep+'cuda_ftp_libs'+os.sep+dirname )
+    sys.path.append(os.path.join(app_path(APP_DIR_PY), 'cuda_ftp_libs', dirname))
 
 try:
     import paramiko
