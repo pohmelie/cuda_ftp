@@ -1,8 +1,7 @@
 Windows
 -------
 
-Windows 64-bit: you must install plugin "SFTP support for Windows 64-bit", it installs Paramiko and all other libs to dir "py\cuda_ftp_libs", it will be used by FTP plugin.
-Windows 32-bit: additional plugin will be ready soon...
+On Windows (x32/x64) you must install plugin "SFTP support for Windows", which adds Paramiko and other libs to folder "py\cuda_ftp_libs", it will be used by FTP plugin.
 
 
 Linux
@@ -29,7 +28,7 @@ $ sudo pip3 install paramiko
 macOS
 -----
 
-In terminal run:
+In Terminal run:
 
 $ brew install openssl
 $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include"
