@@ -1,4 +1,7 @@
 
+2017.09.25
+- fix: avoid deleted APIs
+
 2017.09.09
 + added usage of SFTP libs on Windows, if additional plugin "SFTP support" is installed
 

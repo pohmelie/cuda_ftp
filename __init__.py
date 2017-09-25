@@ -484,7 +484,13 @@ class Command:
         return tree_proc(self.tree, TREE_ITEM_GET_SELECTED)
 
     def get_info(self, index):
-        return NodeInfo(*tree_proc(self.tree, TREE_ITEM_GET_PROP, index))
+        prop = tree_proc(self.tree, TREE_ITEM_GET_PROPS, index)
+        return NodeInfo(
+            prop['text'],
+            prop['index'],
+            prop['icon'],
+            prop['level']
+            )
 
     def generate_context_menu(self):
         if not self.h_menu:
@@ -567,7 +573,7 @@ class Command:
         path = []
         while not self.get_info(index).image == NODE_SERVER:
             path.append(self.get_info(index).caption)
-            index = tree_proc(self.tree, TREE_ITEM_GET_PARENT, index)
+            index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, index)['parent']
         path.reverse()
         server_path = PurePosixPath("/" + str.join("/", path))
         short_info = str.split(self.get_info(index).caption, "@")
@@ -764,7 +770,7 @@ class Command:
     def action_remove_file(self):
         try:
             self.remove_file(*self.get_location_by_index(self.selected))
-            index = tree_proc(self.tree, TREE_ITEM_GET_PARENT, self.selected)
+            index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
             self.refresh_node(index)
         except Exception as ex:
             show_log("Remove file", str(ex))
