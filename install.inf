@@ -5,6 +5,11 @@ type=cudatext-plugin
 subdir=cuda_ftp
 homepage=https://github.com/pohmelie/cuda_ftp
 
+[sidebar1]
+hint=FTP
+icon=ftp.png
+method=show_panel
+
 [item1]
 section=events
 events=on_save
