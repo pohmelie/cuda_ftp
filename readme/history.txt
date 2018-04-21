@@ -1,4 +1,7 @@
 
+2018.04.21
++ add: event on_save now handled only if plugin is loaded (faster)
+
 2018.02.25
 + add: support CudaText new API: always show sidebar button
 

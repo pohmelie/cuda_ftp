@@ -4,6 +4,7 @@ desc=Allows to handle remote files/folders on FTP+SFTP servers. Read text file a
 type=cudatext-plugin
 subdir=cuda_ftp
 homepage=https://github.com/pohmelie/cuda_ftp
+api=1.0.235
 
 [sidebar1]
 hint=FTP
@@ -12,7 +13,7 @@ method=show_panel
 
 [item1]
 section=events
-events=on_save
+events=on_save~
 
 [item2]
 section=commands
