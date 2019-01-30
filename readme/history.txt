@@ -1,4 +1,7 @@
 
+2019.01.30
++ add: new gray icons are used
+
 2018.04.21
 + add: event on_save now handled only if plugin is loaded (faster)
 
