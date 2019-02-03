@@ -387,7 +387,13 @@ class Command:
     def init_panel(self):
         init_log()
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
+
         self.h_dlg = dlg_proc(0, DLG_CREATE)
+        dlg_proc(self.h_dlg, DLG_PROP_SET, prop={
+            'keypreview': True,
+            'on_key_down': self.form_on_key,
+            })
+
         n = dlg_proc(self.h_dlg, DLG_CTL_ADD, prop='treeview')
         dlg_proc(self.h_dlg, DLG_CTL_PROP_SET, index=n, prop={
             'name': 'tree',
@@ -858,3 +864,8 @@ class Command:
             self.action_refresh()
         elif info.image == NODE_FILE:
             self.action_open_file()
+
+    def form_on_key(self, id_dlg, id_ctl, data='', info=''):
+        #Space pressed
+        if id_ctl==0x20 and data=='':
+            self.tree_on_click_dbl(id_dlg, 0, '', '')
