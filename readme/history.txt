@@ -1,4 +1,7 @@
 
+2019.02.03
++ add: Space press in treeview does the same as double click
+
 2019.01.30
 + add: new gray icons are used
 
