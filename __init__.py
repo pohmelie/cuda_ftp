@@ -384,6 +384,8 @@ class Command:
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = Path(self.temp_dir.name)
 
+        self.keys()
+
     def init_panel(self):
         init_log()
         ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
@@ -866,6 +868,14 @@ class Command:
             self.action_open_file()
 
     def form_on_key(self, id_dlg, id_ctl, data='', info=''):
-        #Space pressed
-        if id_ctl==0x20 and data=='':
+        dbl_click = self.keys()
+        if id_ctl==dbl_click and data=='':
             self.tree_on_click_dbl(id_dlg, 0, '', '')
+
+    def keys(self):
+        spaceBtn=32
+        if "keys" in self.options:
+          return self.options["keys"].get("dbl_click", spaceBtn)
+        else:
+          self.options["keys"]={"dbl_click": spaceBtn}
+          self.save_options()

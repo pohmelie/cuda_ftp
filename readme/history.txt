@@ -1,3 +1,5 @@
+2019.02.04
++ customizable hotkey for navigate by ftp-tree (see also changelog below 2019.02.03, config-file cuda_ftp.json and https://css-tricks.com/snippets/javascript/javascript-keycodes/)
 
 2019.02.03
 + add: Space press in treeview does the same as double click
