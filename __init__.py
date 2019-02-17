@@ -582,7 +582,7 @@ class Command:
             index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, index)['parent']
         path.reverse()
         server_path = PurePosixPath("/" + str.join("/", path))
-        short_info = str.split(self.get_info(index).caption, "@")
+        short_info = str.split(self.get_info(index).caption, "@", maxsplit=1)
         server = self.get_server_by_short_info(*short_info)
         prefix = pathlib.Path(
             server_type(server),
