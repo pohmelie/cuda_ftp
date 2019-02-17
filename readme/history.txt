@@ -1,4 +1,7 @@
 
+2019.02.17
+- fix: UI error if "login" contains an e-mail
+
 2019.02.03
 + add: Space press in treeview does the same as double click
 
