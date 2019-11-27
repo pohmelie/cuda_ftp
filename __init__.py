@@ -13,12 +13,14 @@ from datetime import datetime
 from .dlg import *
 
 #for Windows, use portable installation of Paramiko+others
+v = sys.version_info
+v = str(v[0])+str(v[1])
 if os.name=='nt':
     if platform.architecture()[0] == '32bit':
         dirname = 'x32'
     else:
         dirname = 'x64'
-    sys.path.append(os.path.join(app_path(APP_DIR_PY), 'cuda_ftp_libs', dirname))
+    sys.path.append(os.path.join(app_path(APP_DIR_PY), 'cuda_ftp_libs_py'+v, dirname))
 
 try:
     import paramiko
