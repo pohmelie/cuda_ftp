@@ -27,6 +27,8 @@ Notes
 - File, which was downloaded and edited, will be uploaded, when "Save" command runs.
 - Config file is "[Cudatext]/settings/cuda_ftp.json"
 - No permanent connection to FTP is kept. Each request (read dir, download, upload...) makes new connection, then closes connection.
+- If using public key authentication, server certificate's fingerprint is saved and you will be warned if it changes.
+- Passphrase for a private key is never saved to disk, so after CudaText restart you will be prompted for it again.
 
 Read separate text-file about SFTP support.
 For SFTP, Paramiko lib must be installed (on Linux and macOS).
