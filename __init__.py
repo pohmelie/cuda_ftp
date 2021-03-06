@@ -11,6 +11,8 @@ from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
 from datetime import datetime
 from .dlg import *
+import hashlib
+import base64
 
 #for Windows, use portable installation of Paramiko+others
 v = sys.version_info
@@ -33,7 +35,6 @@ import cudatext_cmd
 # Create panel in the bottom for logging
 TITLE_LOG = "FTP Log"
 handle_log = 0
-
 
 def init_log():
     global handle_log
@@ -62,6 +63,8 @@ SHOW_EX = False
 
 # temp storage of password inputs
 pass_inputs = {}
+# temp storage of password inputs for private keys
+pkeys_pass = {}
 
 
 def server_address(server):
@@ -121,6 +124,14 @@ def server_label(server):
     return server.get("label", "")
 
 
+def server_pkey_path(server):
+    return server.get("pkey_path", "")
+
+
+def server_remote_cert_fp(server):
+    return server.get("remote_cert_fingerprint", "")
+
+
 def server_use_list(server):
     return server.get("use_list", False)
 
@@ -147,8 +158,11 @@ def dialog_server(init_server=None):
     _time = server_timeout(init_server) if init_server else "30"
     _label = server_label(init_server) if init_server else ""
     _uselist = server_use_list(init_server) if init_server else False
+    _pkey = server_pkey_path(init_server) if init_server else ""
+    _remote_cert_fp = server_remote_cert_fp(init_server) if init_server else ""
 
-    res = dialog_server_props(_typ, _host, _port, _username, _pass, _dir, _time, _label, _uselist)
+    res = dialog_server_props(_typ, _host, _port, _username, _pass, _dir, _time, _label, _uselist,
+                _pkey)
     if res is None:
         return
 
@@ -161,25 +175,74 @@ def dialog_server(init_server=None):
         "init_dir",
         "timeout",
         "label",
-        "use_list"
+        "use_list",
+        "pkey_path",
         ), res))
+    data["remote_cert_fingerprint"] = _remote_cert_fp
     return data
 
+def get_fingerprint(crypt_type, key_bytes=None, key_str=None):
+    if key_bytes is None:
+        key_bytes = base64.b64decode(key_str)
+
+    if crypt_type == 'md5':
+        h = hashlib.md5()
+    elif crypt_type == 'sha1':
+        h = hashlib.sha1()
+
+    h.update(key_bytes)
+    hexdigest = h.hexdigest().upper()
+    fingerprint = ' '.join([hexdigest[i*2:i*2+2] for i in range(len(hexdigest)//2)])
+    return fingerprint
 
 class SFTP:
+    OK = 'sftp_ok'
+    CONFIRM_FIRST_CONNECTION_CERT = 'pkey_first_conn'
+    NEW_REMOTE_CERT_WARN = 'pkey_remote_cert_changed'
+
+    PK_TYPES = [
+        paramiko.rsakey.RSAKey,
+        paramiko.ed25519key.Ed25519Key,
+        paramiko.ecdsakey.ECDSAKey,
+        paramiko.dsskey.DSSKey,
+    ]
 
     def connect(self, address, port, timeout=None):
+        self.address = address
+        self.port = port
         self.sock = socket.create_connection((address, port), timeout=timeout)
         self.transport = paramiko.transport.Transport(self.sock)
 
-    def login(self, username, password):
-        self.transport.connect(None, username, password)
+    def login(self, username, password, pkey_path, remote_cert_fp):
+        if pkey_path: # login with private key
+            pkey = self._get_private_key(username, pkey_path)
+
+            self.transport.connect(None, username, pkey=pkey)
+
+            servkey = self.transport.get_remote_server_key()
+            r_remote_cert = servkey.asbytes()
+
+            r_remote_cert_fp = get_fingerprint('sha1', key_bytes=r_remote_cert)
+
+            if not remote_cert_fp: # first conenction
+                yield (SFTP.CONFIRM_FIRST_CONNECTION_CERT, r_remote_cert)
+            elif remote_cert_fp != r_remote_cert_fp: # remote server certificate changed
+                yield (SFTP.NEW_REMOTE_CERT_WARN,          r_remote_cert)
+            else:
+                yield SFTP.OK
+
+        else: # login with password
+            self.transport.connect(None, username, password)
+
         self.sftp = self.transport.open_sftp_client()
+        yield None
 
     def quit(self):
         self.sftp.close()
         self.transport.close()
 
+    # The MLSD command is a replacement for the LIST command that is meant to
+    #   standardize the format for directory listings
     def mlsd(self, path, use_list=False):
         for info in self.sftp.listdir_iter(str(path)):
             if stat.S_ISDIR(info.st_mode):
@@ -212,6 +275,35 @@ class SFTP:
 
     def delete(self, path):
         self.sftp.remove(path)
+
+    def _get_private_key(self, username, pkey_path):
+        i = 0
+        while i < len(SFTP.PK_TYPES):
+            PKeyType = SFTP.PK_TYPES[i]
+            i += 1
+            with open(pkey_path, 'r', encoding='utf-8') as f:
+                try:
+                    pkey = PKeyType.from_private_key(f, password=pkeys_pass.get(pkey_path))
+                    break
+                except paramiko.ssh_exception.PasswordRequiredException:
+                    title = "sftp://{}@{}:{}".format(username, self.address, self.port)
+                    res = dlg_password(title, "Enter private key passphrase:")
+                    if res:
+                        i -= 1 # repeat same PKeyType
+                        pkeys_pass[pkey_path] = res
+                        continue
+                    else:
+                        pkey = None
+                        break
+                except paramiko.ssh_exception.SSHException: # wrong key type  or  wrong|need passphrase
+                    pkey = None
+                    continue
+
+        if pkey is None:
+            if pkey_path in pkeys_pass:
+                del pkeys_pass[pkey_path] # same exception for wrong pass or wronk keyType
+            raise Exception('Failed to load private key!')
+        return pkey
 
 
 def parse_list_line(b, encoding="utf-8"):
@@ -259,6 +351,10 @@ class FTP_:
 
     def __getattr__(self, name):
         return getattr(self._ftp, name)
+
+    def login(self, username, password, *args):
+        self._ftp.login(username, password)
+        yield None
 
     def mlsd(self, path, use_list=False):
         if use_list:
@@ -517,7 +613,8 @@ class Command:
     def store_file(self, server, server_path, client_path):
         try:
             with CommonClient(server) as client:
-                client.login(server_login(server), server_password(server))
+                self.login(client, server)
+
                 try:
                     client.mkd(str(server_path.parent))
                 except error_perm:
@@ -530,6 +627,50 @@ class Command:
             show_log("Upload file", str(ex))
             if SHOW_EX:
                 raise
+
+    def login(self, client, server):
+        resgen = client.login(server_login(server), server_password(server),
+                    server_pkey_path(server), server_remote_cert_fp(server))
+
+        res = next(resgen)
+
+        if res is None: # FTP
+            return
+        elif res == SFTP.OK:
+            next(resgen)
+            return
+
+        try:
+            item,data = res[:2]
+        except TypeEror:
+            raise Exception('Login failed!')
+
+        r_remote_cert = data
+        sha1_fp = get_fingerprint("sha1", r_remote_cert)
+        fingerprints = "[MD5]: {}\n[SHA1]: {}".format(get_fingerprint("md5", r_remote_cert), sha1_fp)
+        if item == SFTP.CONFIRM_FIRST_CONNECTION_CERT:
+            msg = "First connection to this host.\nAccept host's certificate?\n\n"+fingerprints
+            res = msg_box(msg, MB_OKCANCEL | MB_ICONQUESTION)
+            if res == ID_OK:
+                server["remote_cert_fingerprint"] = sha1_fp
+                self.save_options()
+                show_log('Private key Auth', 'Accepted host\'s certificate')
+                next(resgen) # continue login process
+                return
+            else:
+                raise Exception('Login canceled! Did not accept host server\'s certificate.')
+
+        elif item == SFTP.NEW_REMOTE_CERT_WARN:
+            msg = "Host's certificate changed! Proceed?\n\n"+fingerprints
+            res = msg_box(msg, MB_OKCANCEL | MB_ICONWARNING)
+            if res == ID_OK:
+                server["remote_cert_fingerprint"] = sha1_fp
+                self.save_options()
+                show_log('Private key Auth', 'Accepted changed host\'s certificate')
+                next(resgen) # continue login process
+                return
+            else:
+                raise Exception('Login canceled! Did not accept remote host\'s changed certificate.')
 
     def retrieve_file(self, server, server_path, client_path):
         try:
@@ -565,7 +706,7 @@ class Command:
         progress_prev = 0
         app_proc(PROC_SET_ESCAPE, '0')
         with CommonClient(server) as client:
-            client.login(server_login(server), server_password(server))
+            self.login(client, server)
             with client_path.open(mode="wb") as fout:
                 client.retrbinary("RETR " + str(server_path), retr_callback)
 
@@ -616,7 +757,7 @@ class Command:
         server, server_path, _ = self.get_location_by_index(node_index)
         try:
             with CommonClient(server) as client:
-                client.login(server_login(server), server_password(server))
+                self.login(client, server)
                 path_list = sorted(
                     client.mlsd(server_path, server_use_list(server)),
                     key=lambda p: (p[1]["type"], p[0])
@@ -772,7 +913,7 @@ class Command:
 
     def remove_file(self, server, server_path, client_path):
         with CommonClient(server) as client:
-            client.login(server_login(server), server_password(server))
+            self.login(client, server)
             client.delete(str(server_path))
 
     def action_remove_file(self):
@@ -798,7 +939,7 @@ class Command:
         name = dir_info[0]
         try:
             with CommonClient(server) as client:
-                client.login(server_login(server), server_password(server))
+                self.login(client, server)
                 client.mkd(str(server_path / name))
         except Exception as ex:
             show_log("Create dir", str(ex))
@@ -828,7 +969,7 @@ class Command:
         server, server_path, _ = self.get_location_by_index(self.selected)
         try:
             with CommonClient(server) as client:
-                client.login(server_login(server), server_password(server))
+                self.login(client, server)
                 self.remove_directory_recursive(client, server_path)
                 tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
         except Exception as ex:
