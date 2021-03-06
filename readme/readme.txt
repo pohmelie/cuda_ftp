@@ -34,6 +34,8 @@ Read separate text-file about SFTP support.
 For SFTP, Paramiko lib must be installed (on Linux and macOS).
 
 
-Authors: @pohmelie, Alexey T.
+Authors:
+  Nikita Melentev, https://github.com/pohmelie/
+  Alexey Torgashin (CudaText)
+  Shovel, https://github.com/halfbrained/
 License: MIT
-Homepage: https://github.com/pohmelie/cuda_ftp
