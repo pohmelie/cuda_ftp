@@ -56,14 +56,14 @@ def dialog_server_props(s_type, s_host, s_port,
              +[c1.join(['type=edit',    'pos=180,248,490,0', 'val='+s_dir])]
 
              +[c1.join(['type=label',   'pos=6,280,148,0', 'cap=Timeout (seconds):'])]
-             +[c1.join(['type=spinedit','pos=180,278,240,0', 'props=1,120,1', 'val='+s_timeout])]
+             +[c1.join(['type=spinedit','pos=180,278,240,0', 'ex0=1', 'ex1=120', 'ex2=1', 'val='+s_timeout])]
 
              +[c1.join(['type=label',   'pos=6,310,148,0', 'cap=Label (for menu):'])]
-             +[c1.join(['type=spinedit','pos=180,308,240,0', 'props=1,6,1', 'val='+s_label])]
+             +[c1.join(['type=spinedit','pos=180,308,240,0', 'ex0=1', 'ex1=6', 'ex2=1', 'val='+s_label])]
 
              +[c1.join(['type=check',   'pos=6,340,300,0', 'cap=Use old LIST command', 'val='+('1' if s_uselist else '0') ])]
 
-             +[c1.join(['type=button', 'pos=300,382,394,0', 'cap=&OK', 'props=1'])]
+             +[c1.join(['type=button', 'pos=300,382,394,0', 'cap=&OK', 'ex0=1'])]
              +[c1.join(['type=button', 'pos=400,382,490,0', 'cap=Cancel'])]
           ) )
 
@@ -117,7 +117,7 @@ def dlg_password(title, label):
             +[c1.join(['type=label', 'pos=6,8,394,0', 'cap='+label])]
             +[c1.join(['type=edit_pwd', 'pos=6,24,394,0'])] # 1
 
-            +[c1.join(['type=button', 'pos=200,55,294,0', 'cap=&OK', 'props=1'])] # 2
+            +[c1.join(['type=button', 'pos=200,55,294,0', 'cap=&OK', 'ex0=1'])] # 2
             +[c1.join(['type=button', 'pos=300,55,394,0', 'cap=Cancel'])]
     ))
     if res is None: return

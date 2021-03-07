@@ -1,3 +1,7 @@
+
+2021.03.07
+- fix: avoid deleted API
+
 2021.03.06
 + add: SFTP public key authentication support (work by @halfbrained)
 
