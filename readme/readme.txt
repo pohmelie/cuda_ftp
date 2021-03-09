@@ -8,11 +8,12 @@ Empty list:
 For servers:
  - new server
  - edit server
- - remove server
+ - rename server
  - go to (change ftp directory)
  - new file (creates file in initial dir)
  - new dir (creates dir in initial dir)
  - refresh (re-reads initial dir)
+ - remove server
 For dirs (after opening server by double-clicking or "refresh"):
  - new file
  - new dir
@@ -22,12 +23,16 @@ For files:
  - open file (download and open in editor)
  - remove file
  
-Notes
+General notes
 
 - File, which was downloaded and edited, will be uploaded, when "Save" command runs.
 - Config file is "[Cudatext]/settings/cuda_ftp.json"
 - No permanent connection to FTP is kept. Each request (read dir, download, upload...) makes new connection, then closes connection.
-- If using public key authentication, server certificate's fingerprint is saved and you will be warned if it changes.
+
+Public key authentication notes
+
+- Private key must be in OpenSSH format. PuTTYgen keys (.ppk) cen be converted to supported format by PuTTYgen itself.
+- Server certificate's fingerprint is saved and you will be warned if it changes.
 - Passphrase for a private key is never saved to disk, so after CudaText restart you will be prompted for it again.
 
 Read separate text-file about SFTP support.

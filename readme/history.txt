@@ -1,6 +1,6 @@
-
-2021.03.07
-- fix: avoid deleted API
+2021.03.09
++ add: 'rename' command for servers (work by @halfbrained)
+* migrated dialogs from legacy API
 
 2021.03.06
 + add: SFTP public key authentication support (work by @halfbrained)
