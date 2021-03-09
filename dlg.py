@@ -6,9 +6,6 @@ _   = get_translation(__file__)  # I18N
 
 VK_ENTER = 13
 
-#TODO sshopen key format: in edit and readme 
-#TODO ask for alias when already taken
-
 def dialog_server_props(s_type, s_host, s_port,
                         s_username, s_password, s_dir, s_timeout,
                         s_label, s_uselist, s_pkey):
@@ -25,7 +22,7 @@ def dialog_server_props(s_type, s_host, s_port,
     dlg_proc(h, DLG_PROP_SET, prop={
                 'cap': _('FTP server info'),
                 'border': DBORDER_SIZE,
-                'w_min': round(400*scale),
+                'w_min': round(550*scale),
                 'autosize': True,
     })
                     
@@ -77,7 +74,7 @@ def dialog_server_props(s_type, s_host, s_port,
         
     ### Controls
     label_defaults = {
-                'w_min': round(110*scale),  
+                'w_min': round(150*scale),  
                 'sp_a': round(3*scale),  
                 'sp_t': round(6*scale),
     }
