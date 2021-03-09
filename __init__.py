@@ -66,6 +66,8 @@ pass_inputs = {}
 # temp storage of password inputs for private keys
 pkeys_pass = {}
 
+''' file:///install.inf
+'''
 
 def server_address(server):
     return server.get("address", "")
@@ -78,12 +80,12 @@ def server_login(server):
 def server_password(server, can_input=True):
     s = server.get("password", "")
     if s == '?' and can_input:
-        title = server_list_caption(server)
+        title = server_alias(server)
         s = pass_inputs.get(title, '')
         if s:
             return s
 
-        s = dlg_input('Password for {}:'.format(title), '')
+        s = dlg_password('CudaText', 'Password for {}:'.format(title))
         if not s:
             raise Exception('Password input cancelled')
         pass_inputs[title] = s
@@ -134,15 +136,25 @@ def server_remote_cert_fp(server):
 
 def server_use_list(server):
     return server.get("use_list", False)
+    
 
+def server_alias(server):
+    return server.get('alias')
+    
 
-def server_list_caption(server):
+def server_title(server):
     return "{}://{}:{}@{}".format(
         server_type(server),
         server_address(server),
         server_port(server),
         server_login(server),
     )
+
+
+def server_alias_candidates(server):
+    title = server_title(server)
+    yield title
+    yield from ('{} {}'.format(title, i) for i in range(2, 2**30))    
 
 
 def dialog_server(init_server=None):
@@ -450,12 +462,13 @@ class Command:
         NODE_SERVER: (
             "New server...",
             "Edit server...",
-            "Remove server",
+            "Rename server...",
             "Go to...",
             "New file...",
             "New dir...",
             "Upload here...",
             "Refresh",
+            "Remove server",
         ),
         NODE_DIR: (
             "New file...",
@@ -477,8 +490,27 @@ class Command:
         if self.options_filename.exists():
             with self.options_filename.open() as fin:
                 self.options = json.load(fin)
+                
+        # give aliases if missing
+        aliases = self.list_aliases()
+        found_repeated = set()
+        for server in self.options["servers"]:
+            alias = server_alias(server)
+            if alias is None: # no alias - create
+                alias = next(al for al in server_alias_candidates(server)  if al not in aliases)
+                server['alias'] = alias
+                aliases.append(alias)
+            elif aliases.count(alias) > 1: # has alias but repeating  (should_never_happen_tm)
+                if alias not in found_repeated: # first encounted - skip
+                    found_repeated.add(alias)
+                else: # already have this alias
+                    server['alias'] = next(al for al in server_alias_candidates(server)  if al not in aliases)
+                    aliases.append(alias)
+                    
+        # fill tree
         for server in self.options["servers"]:
             self.action_new_server(server)
+            
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = Path(self.temp_dir.name)
 
@@ -531,7 +563,7 @@ class Command:
             self.inited = True
             self.init_panel()
             self.init_options()
-        menu_items = [server_list_caption(server) for server in self.options["servers"]]
+        menu_items = [server_alias(server) for server in self.options["servers"]]
         res = dlg_menu(MENU_LIST, '\n'.join(menu_items))
         if res is None:
             return
@@ -560,7 +592,7 @@ class Command:
             self.init_options()
         for server in self.options["servers"]:
             if server_label(server) == label:
-                self.connect_by_caption(server_list_caption(server))
+                self.connect_by_caption(server_alias(server))
                 return
         else:
             msg_status('Cannot find server with label "{}"'.format(label))
@@ -710,23 +742,32 @@ class Command:
             with client_path.open(mode="wb") as fout:
                 client.retrbinary("RETR " + str(server_path), retr_callback)
 
+    def get_server_by_alias(self, alias):
+        for server in self.options["servers"]:
+            if server_alias(server) == alias:
+                return server
+        raise Exception("No server with alias '{}'".format(alias))
+        
     def get_server_by_short_info(self, address, login):
         # print('Finding server:', address+'@'+login)
         for server in self.options["servers"]:
-            key = server_type(server) + "://" + server_address(server) + ":" + server_port(server), server_login(server)
+            key = (server_type(server) + "://" + server_address(server) + ":" + server_port(server), 
+                        server_login(server) )
             if key == (address, login):
                 return server
         raise Exception("Server {}@{} has no full info".format(address, login))
+        
 
     def get_location_by_index(self, index):
         path = []
-        while not self.get_info(index).image == NODE_SERVER:
+        while not self.get_info(index).image == NODE_SERVER: # build path from tree nodes
             path.append(self.get_info(index).caption)
             index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, index)['parent']
         path.reverse()
         server_path = PurePosixPath("/" + str.join("/", path))
-        short_info = str.split(self.get_info(index).caption, "@", maxsplit=1)
-        server = self.get_server_by_short_info(*short_info)
+        
+        server = self.get_server_by_alias(self.get_info(index).caption)
+        
         prefix = pathlib.Path(
             server_type(server),
             server_address(server),
@@ -786,6 +827,9 @@ class Command:
             )
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, node_index)
 
+    def list_aliases(self):
+        return [server_alias(s) for s in self.options["servers"]]
+
     def on_save(self, ed_self):
         if not self.inited:
             return
@@ -801,10 +845,18 @@ class Command:
             server_info = dialog_server()
             if server_info is None:
                 return
+            
+            # give alias
+            alias = server_title(server_info)
+            aliases = self.list_aliases()
+            if alias in aliases:
+                alias = next(al for al in server_alias_candidates(server_info)  if al not in aliases)
+            server_info['alias'] = alias
+                
             self.options["servers"].append(server_info)
             self.save_options()
             server = server_info
-        caption = server_list_caption(server)
+        caption = server_alias(server)
         tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, caption, 0)
 
     def action_edit_server(self):
@@ -812,13 +864,44 @@ class Command:
         server_info = dialog_server(server)
         if server_info is None:
             return
+        
+        server_info['alias'] = server_alias(server)
         servers = self.options["servers"]
         i = servers.index(server)
         servers[i] = server_info
         server = server_info
-        caption = server_list_caption(server)
+        
+        caption = server_alias(server)
         tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
         self.save_options()
+        
+    def action_rename_server(self):
+        server, *_ = self.get_location_by_index(self.selected)
+        
+        alias = server_alias(server)
+        aliases = self.list_aliases()
+        aliases.remove(alias)
+        
+        prev = None
+        while True:
+            prompt = 'Rename server: {}'.format(alias)
+            if prev:
+                prompt += '\nName taken: {}'.format(prev)
+            res = dlg_input(prompt,  prev or alias)
+
+            if res is None:
+                return
+            if res == '': # reset to default
+                res = next(al for al in server_alias_candidates(server)  if al not in aliases)
+            if res not in aliases:
+                server['alias'] = res
+                break
+            prev = res
+        
+        caption = server_alias(server)
+        tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
+        self.save_options()
+        
 
     def action_remove_server(self):
         server, *_ = self.get_location_by_index(self.selected)
