@@ -38,6 +38,10 @@ def dialog_server_props(s_type, s_host, s_port,
         caption = _('Choose private key file')
         fn = dlg_file(is_open=True, init_filename='', init_dir=path, filters='', caption=caption)
         if fn:
+            if Misc.is_puttygen_key(fn):
+                msg = 'You chose a private key in the PuTTYgen format,\nwhich is not supported.\n' + \
+                            'You need to convert it to the OpenSSH format first.\nPuTTYgen can accomplish that.'
+                res = msg_box(msg, MB_OK | MB_ICONWARNING)
             dlg_proc(h, DLG_CTL_PROP_SET, name='pkey', prop={'val': fn})
         
     def m_ok(*args, **vargs): #SKIP
@@ -62,9 +66,6 @@ def dialog_server_props(s_type, s_host, s_port,
             return
         if not s_username:
             msg_box(_('Fill the Username field'), MB_OK)
-            return
-        if s_pkey and s_pkey.endswith('.ppk'):
-            msg_box(_('Private key must be in OpenSSH format!\n.ppk file can be converted to proper format by PuTTYgen.'), MB_OK)
             return
             
         future_result[0] = (s_type, s_host, s_port, s_username, s_password, s_dir, s_timeout, s_label, s_uselist, s_pkey)
@@ -551,3 +552,14 @@ def dlg_password(title, label):
     dlg_proc(h, DLG_FREE)
     
     return future_result[0]
+
+class Misc:
+    # https://tartarus.org/~simon/putty-snapshots/htmldoc/AppendixC.html#ppk-outer
+    PUTTY_KEY_HEADER = 'PuTTY-User-Key-File-'
+    
+    def is_puttygen_key(filepath):
+        if os.path.exists(filepath):
+            with open(filepath, 'r') as f:
+                return f.readline().startswith(Misc.PUTTY_KEY_HEADER)
+
+
