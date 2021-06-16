@@ -564,7 +564,7 @@ class Command:
             self.init_panel()
             self.init_options()
         menu_items = [server_alias(server) for server in self.options["servers"]]
-        res = dlg_menu(MENU_LIST, '\n'.join(menu_items))
+        res = dlg_menu(DMENU_LIST, menu_items, caption='Connect to server')
         if res is None:
             return
         self.connect_by_caption(menu_items[res])
