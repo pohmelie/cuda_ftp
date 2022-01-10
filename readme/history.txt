@@ -1,4 +1,7 @@
 
+2022.01.09
+- fix: command to activate FTP panel must force focusing the panel
+
 2021.06.17
 - fix: avoid deprecated API
 
