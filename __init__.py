@@ -420,7 +420,7 @@ def CommonClient(server):
 
 
 def show_log(str1, str2):
-    time_fmt = "[%H:%M] "
+    time_fmt = "[%H:%M:%S] "
     time_str = datetime.now().strftime(time_fmt)
     text = time_str + str1 + ": " + str2
 
