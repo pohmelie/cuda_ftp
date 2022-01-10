@@ -420,7 +420,7 @@ def CommonClient(server):
 
 
 def show_log(str1, str2):
-    time_fmt = "[%H:%M] "
+    time_fmt = "[%H:%M:%S] "
     time_str = datetime.now().strftime(time_fmt)
     text = time_str + str1 + ": " + str2
 
@@ -555,7 +555,7 @@ class Command:
             self.init_options()
         if activate:
             ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
-            app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
+            app_proc(PROC_SIDEPANEL_ACTIVATE, (self.title, True))
         self.generate_context_menu()
 
     def show_menu_connect(self):
