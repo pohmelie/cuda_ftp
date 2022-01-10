@@ -555,7 +555,7 @@ class Command:
             self.init_options()
         if activate:
             ed.cmd(cudatext_cmd.cmd_ShowSidePanelAsIs)
-            app_proc(PROC_SIDEPANEL_ACTIVATE, self.title)
+            app_proc(PROC_SIDEPANEL_ACTIVATE, (self.title, True))
         self.generate_context_menu()
 
     def show_menu_connect(self):
