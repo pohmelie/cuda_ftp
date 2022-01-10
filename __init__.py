@@ -1093,5 +1093,5 @@ class Command:
 
     def form_on_key(self, id_dlg, id_ctl, data='', info=''):
         #Space pressed
-        if id_ctl==0x20 and data=='':
+        if ((id_ctl==0x20 or id_ctl==0x0D) and data==''):
             self.tree_on_click_dbl(id_dlg, 0, '', '')
