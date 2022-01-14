@@ -1155,3 +1155,8 @@ class Command:
         #Space or Enter pressed
         if ((id_ctl==0x20 or id_ctl==0x0D) and data==''):
             self.tree_on_click_dbl(id_dlg, 0, '', '')
+        #Del pressed
+        if (id_ctl==0x2E):
+            info = self.get_info(self.selected)
+            if info.image == NODE_FILE:
+                self.action_remove_file()
