@@ -1,0 +1,62 @@
+diff --git a/__init__.py b/__init__.py
+index 23480e8..b5b4db0 100644
+--- a/__init__.py
++++ b/__init__.py
+@@ -1000,16 +1000,18 @@ class Command:
+             client.delete(str(server_path))
+ 
+     def action_remove_file(self):
+-        try:
+-            self.remove_file(*self.get_location_by_index(self.selected))
+-            server, server_path, _ = self.get_location_by_index(self.selected)
+-            show_log("[×] Removed", server_address(server) + str(server_path))
+-            index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
+-            self.refresh_node(index)
+-        except Exception as ex:
+-            show_log("Remove file", str(ex))
+-            if SHOW_EX:
+-                raise
++        res = msg_box_ex("Confirmation", "Do you really want remove file?", ["No", "Yes"], MB_ICONQUESTION, 0)
++        if res == 1:
++            try:
++                self.remove_file(*self.get_location_by_index(self.selected))
++                server, server_path, _ = self.get_location_by_index(self.selected)
++                show_log("[×] Removed", server_address(server) + str(server_path))
++                index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
++                self.refresh_node(index)
++            except Exception as ex:
++                show_log("Remove file", str(ex))
++                if SHOW_EX:
++                    raise
+ 
+     def action_new_dir(self):
+         server, server_path, client_path = self.get_location_by_index(
+@@ -1052,16 +1054,18 @@ class Command:
+     def action_remove_dir(self):
+         app_proc(PROC_SET_ESCAPE, "0")
+         server, server_path, _ = self.get_location_by_index(self.selected)
+-        try:
+-            with CommonClient(server) as client:
+-                self.login(client, server)
+-                self.remove_directory_recursive(client, server_path)
+-                show_log("[×] Removed", server_address(server) + str(server_path))
+-                tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
+-        except Exception as ex:
+-            show_log("Remove dir", str(ex))
+-            if SHOW_EX:
+-                raise
++        res = msg_box_ex("Confirmation", "Do you really want remove dir?", ["No", "Yes"], MB_ICONQUESTION, 0)
++        if res == 1:
++            try:
++                with CommonClient(server) as client:
++                    self.login(client, server)
++                    self.remove_directory_recursive(client, server_path)
++                    show_log("[×] Removed", server_address(server) + str(server_path))
++                    tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
++            except Exception as ex:
++                show_log("Remove dir", str(ex))
++                if SHOW_EX:
++                    raise
+ 
+     def action_open_file(self):
+         path_info = server, server_path, client_path = \
