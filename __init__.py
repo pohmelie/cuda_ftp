@@ -654,7 +654,7 @@ class Command:
                 with client_path.open(mode="rb") as fin:
                     client.storbinary("STOR " + str(server_path), fin)
 
-            show_log("Uploaded", server_address(server) + str(server_path))
+            show_log("[↑] Uploaded", server_address(server) + str(server_path))
         except Exception as ex:
             show_log("Upload file", str(ex))
             if SHOW_EX:
@@ -1002,6 +1002,8 @@ class Command:
     def action_remove_file(self):
         try:
             self.remove_file(*self.get_location_by_index(self.selected))
+            server, server_path, _ = self.get_location_by_index(self.selected)
+            show_log("[×] Removed", server_address(server) + str(server_path))
             index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
             self.refresh_node(index)
         except Exception as ex:
@@ -1054,6 +1056,7 @@ class Command:
             with CommonClient(server) as client:
                 self.login(client, server)
                 self.remove_directory_recursive(client, server_path)
+                show_log("[×] Removed", server_address(server) + str(server_path))
                 tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
         except Exception as ex:
             show_log("Remove dir", str(ex))
@@ -1065,7 +1068,7 @@ class Command:
             self.get_location_by_index(self.selected)
         try:
             self.retrieve_file(*path_info)
-            show_log("Downloaded", server_address(server) + str(server_path))
+            show_log("[↓] Downloaded", server_address(server) + str(server_path))
             file_open(str(client_path))
         except Exception as ex:
             show_log("Download file", str(ex))
