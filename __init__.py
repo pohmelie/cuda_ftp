@@ -1160,3 +1160,5 @@ class Command:
             info = self.get_info(self.selected)
             if info.image == NODE_FILE:
                 self.action_remove_file()
+            elif info.image == NODE_DIR:
+                self.action_remove_dir()
