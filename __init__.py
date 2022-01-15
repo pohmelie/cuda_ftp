@@ -13,6 +13,7 @@ from datetime import datetime
 from .dlg import *
 import hashlib
 import base64
+import math
 
 #for Windows, use portable installation of Paramiko+others
 v = sys.version_info
@@ -480,6 +481,7 @@ class Command:
         NODE_FILE: (
             "Open file",
             "Remove file",
+            "Get propeties",
         ),
     }
 
@@ -654,7 +656,7 @@ class Command:
                 with client_path.open(mode="rb") as fin:
                     client.storbinary("STOR " + str(server_path), fin)
 
-            show_log("Uploaded", server_address(server) + str(server_path))
+            show_log("[↑] Uploaded", server_address(server) + str(server_path))
         except Exception as ex:
             show_log("Upload file", str(ex))
             if SHOW_EX:
@@ -1000,14 +1002,18 @@ class Command:
             client.delete(str(server_path))
 
     def action_remove_file(self):
-        try:
-            self.remove_file(*self.get_location_by_index(self.selected))
-            index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
-            self.refresh_node(index)
-        except Exception as ex:
-            show_log("Remove file", str(ex))
-            if SHOW_EX:
-                raise
+        res = msg_box("Do you really want remove file?", MB_YESNO+MB_ICONQUESTION)
+        if res == ID_YES:
+            try:
+                self.remove_file(*self.get_location_by_index(self.selected))
+                server, server_path, _ = self.get_location_by_index(self.selected)
+                show_log("[×] Removed", server_address(server) + str(server_path))
+                index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
+                self.refresh_node(index)
+            except Exception as ex:
+                show_log("Remove file", str(ex))
+                if SHOW_EX:
+                    raise
 
     def action_new_dir(self):
         server, server_path, client_path = self.get_location_by_index(
@@ -1050,27 +1056,81 @@ class Command:
     def action_remove_dir(self):
         app_proc(PROC_SET_ESCAPE, "0")
         server, server_path, _ = self.get_location_by_index(self.selected)
-        try:
-            with CommonClient(server) as client:
-                self.login(client, server)
-                self.remove_directory_recursive(client, server_path)
-                tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
-        except Exception as ex:
-            show_log("Remove dir", str(ex))
-            if SHOW_EX:
-                raise
+        res = msg_box("Do you really want remove dir?", MB_YESNO+MB_ICONQUESTION)
+        if res == ID_YES:
+            try:
+                with CommonClient(server) as client:
+                    self.login(client, server)
+                    self.remove_directory_recursive(client, server_path)
+                    show_log("[×] Removed", server_address(server) + str(server_path))
+                    tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
+            except Exception as ex:
+                show_log("Remove dir", str(ex))
+                if SHOW_EX:
+                    raise
 
     def action_open_file(self):
         path_info = server, server_path, client_path = \
             self.get_location_by_index(self.selected)
         try:
             self.retrieve_file(*path_info)
-            show_log("Downloaded", server_address(server) + str(server_path))
+            show_log("[↓] Downloaded", server_address(server) + str(server_path))
             file_open(str(client_path))
         except Exception as ex:
             show_log("Download file", str(ex))
             if SHOW_EX:
                 raise
+                
+    def action_get_propeties(self):
+        def convert_size(size_bytes):
+            size_bytes = int(size_bytes)
+            if size_bytes == 0:
+                return "0b"
+            size_name = ("b", "kB", "mB", "gB")
+            i = int(math.floor(math.log(size_bytes, 1024)))
+            p = math.pow(1024, i)
+            s = round(size_bytes / p, 2)
+            return str("%s %s" % (s, size_name[i]))
+           
+        def get_datetime(dat_):
+            today_ = datetime.now().strftime("%d.%m.%Y")
+            date_ = datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%d.%m.%Y")
+            if (date_ == today_):
+                res_ = 'today ' + datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%H:%M:%S")
+            else:
+                res_ = datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%d.%m.%Y %H:%M:%S")
+            return res_
+        
+        def output_file_info(dat_):
+            res_ = ''
+            res_ += 'Size: ' + convert_size(dat_["size"]) + "\n\n"
+            res_ += 'Modify DateTime: ' + get_datetime(dat_["modify"]) + "\n\n"
+            res_ += 'Permissions: '+ dat_["unix.mode"]
+            return res_
+
+        server, server_path, _ = self.get_location_by_index(self.selected)
+        
+        def get_filedir(dat_):
+            tmp = str(dat_).split("/")
+            tmp.pop()
+            return "/".join(tmp) + "/"
+            
+        server_path_ = get_filedir(server_path)
+        
+        with CommonClient(server) as client:
+            self.login(client, server)
+            path_list = sorted(
+                    client.mlsd(server_path_, server_use_list(server)),
+                    key=lambda p: (p[1]["type"], p[0])
+                )
+        
+        dat_ = ""
+        for name, facts in path_list:
+            name_ = str(server_path_ + name)
+            if (name_ == str(server_path)):
+                dat_ = facts
+            
+        msg_box(output_file_info(dat_), MB_OK)
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
@@ -1095,3 +1155,10 @@ class Command:
         #Space or Enter pressed
         if ((id_ctl==0x20 or id_ctl==0x0D) and data==''):
             self.tree_on_click_dbl(id_dlg, 0, '', '')
+        #Del pressed
+        if (id_ctl==0x2E):
+            info = self.get_info(self.selected)
+            if info.image == NODE_FILE:
+                self.action_remove_file()
+            elif info.image == NODE_DIR:
+                self.action_remove_dir()
