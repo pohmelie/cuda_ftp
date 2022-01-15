@@ -481,7 +481,7 @@ class Command:
         NODE_FILE: (
             "Open file",
             "Remove file",
-            "Get propeties",
+            "Get properties",
         ),
     }
 
@@ -1002,7 +1002,7 @@ class Command:
             client.delete(str(server_path))
 
     def action_remove_file(self):
-        res = msg_box("Do you really want remove file?", MB_YESNO+MB_ICONQUESTION)
+        res = msg_box("Do you really want to remove file?", MB_YESNO+MB_ICONQUESTION)
         if res == ID_YES:
             try:
                 self.remove_file(*self.get_location_by_index(self.selected))
@@ -1056,7 +1056,7 @@ class Command:
     def action_remove_dir(self):
         app_proc(PROC_SET_ESCAPE, "0")
         server, server_path, _ = self.get_location_by_index(self.selected)
-        res = msg_box("Do you really want remove dir?", MB_YESNO+MB_ICONQUESTION)
+        res = msg_box("Do you really want to remove directory?", MB_YESNO+MB_ICONQUESTION)
         if res == ID_YES:
             try:
                 with CommonClient(server) as client:
@@ -1081,7 +1081,7 @@ class Command:
             if SHOW_EX:
                 raise
                 
-    def action_get_propeties(self):
+    def action_get_properties(self):
         def convert_size(size_bytes):
             size_bytes = int(size_bytes)
             if size_bytes == 0:
@@ -1104,7 +1104,7 @@ class Command:
         def output_file_info(dat_):
             res_ = ''
             res_ += 'Size: ' + convert_size(dat_["size"]) + "\n\n"
-            res_ += 'Modify DateTime: ' + get_datetime(dat_["modify"]) + "\n\n"
+            res_ += 'Modification: ' + get_datetime(dat_["modify"]) + "\n\n"
             res_ += 'Permissions: '+ dat_["unix.mode"]
             return res_
 
@@ -1130,7 +1130,7 @@ class Command:
             if (name_ == str(server_path)):
                 dat_ = facts
             
-        msg_box(output_file_info(dat_), MB_OK)
+        msg_box(output_file_info(dat_), MB_OK+MB_ICONINFO)
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
