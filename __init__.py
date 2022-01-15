@@ -1002,8 +1002,8 @@ class Command:
             client.delete(str(server_path))
 
     def action_remove_file(self):
-        res = msg_box_ex("Confirmation", "Do you really want remove file?", ["No", "Yes"], MB_ICONQUESTION, 0)
-        if res == 1:
+        res = msg_box("Do you really want remove file?", MB_YESNO+MB_ICONQUESTION)
+        if res == ID_YES:
             try:
                 self.remove_file(*self.get_location_by_index(self.selected))
                 server, server_path, _ = self.get_location_by_index(self.selected)
@@ -1056,8 +1056,8 @@ class Command:
     def action_remove_dir(self):
         app_proc(PROC_SET_ESCAPE, "0")
         server, server_path, _ = self.get_location_by_index(self.selected)
-        res = msg_box_ex("Confirmation", "Do you really want remove dir?", ["No", "Yes"], MB_ICONQUESTION, 0)
-        if res == 1:
+        res = msg_box("Do you really want remove dir?", MB_YESNO+MB_ICONQUESTION)
+        if res == ID_YES:
             try:
                 with CommonClient(server) as client:
                     self.login(client, server)
