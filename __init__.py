@@ -464,7 +464,8 @@ class Command:
             "New server...",
             "Edit server...",
             "Rename server...",
-            "Go to...",
+            "Go to dir...",
+            "Go to file...",
             "New file...",
             "New dir...",
             "Upload here...",
@@ -914,7 +915,7 @@ class Command:
         servers.pop(servers.index(server))
         self.save_options()
 
-    def action_go_to(self):
+    def action_go_to_dir(self):
         ret = dlg_input_ex(
             1,
             "Go to path",
@@ -922,6 +923,37 @@ class Command:
         )
         if ret:
             self.goto_server_path(ret[0])
+            
+    def action_go_to_file(self):
+        ret = dlg_input_ex(
+            1,
+            "Go to file",
+            "Path:", "/index.php",
+        )
+        if ret:
+            def get_filedir_(dat_):
+                tmp = str(dat_).split("/")
+                tmp.pop()
+                return "/".join(tmp) + "/"
+                
+            def get_filename_(dat_):
+                return (str(dat_).split("/"))[-1]
+            
+            self.goto_server_path(get_filedir_(ret[0]))
+            
+            node = tree_proc(
+                self.tree,
+                TREE_ITEM_ADD,
+                int(self.selected),
+                -1,
+                str(get_filename_(ret[0])),
+                NODE_FILE
+            )
+            tree_proc(self.tree, TREE_ITEM_SELECT, node)
+            
+            info = self.get_info(self.selected)
+            if info.image == NODE_FILE:
+                self.action_open_file()
 
     def goto_server_path(self, goto):
         path = PurePosixPath(goto)
