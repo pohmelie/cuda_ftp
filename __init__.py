@@ -476,12 +476,14 @@ class Command:
             "New dir...",
             "Upload here...",
             "Remove dir",
+            "Copy path",
             "Refresh",
         ),
         NODE_FILE: (
             "Open file",
             "Remove file",
             "Get properties",
+            "Copy path",
         ),
     }
 
@@ -1131,6 +1133,10 @@ class Command:
                 dat_ = facts
             
         msg_box(output_file_info(dat_), MB_OK+MB_ICONINFO)
+        
+    def action_copy_path(self):
+        server, server_path, _ = self.get_location_by_index(self.selected)
+        app_proc(PROC_SET_CLIP, server_path)
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
