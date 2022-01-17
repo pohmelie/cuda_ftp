@@ -2,8 +2,9 @@
 2022.01.15 (patches by @ildarkhasanshin)
 + add: pseudo-icons in the log for download, upload, remove
 + add: confirmation to remove file/dir
-+ add: handle Del-key to remove file/dir 
-+ add: item 'Get properties' in the context menu of remote file 
++ add: handle Del-key to remove file/dir
++ add: item 'Get properties' in the context menu of remote file
++ add: item 'Copy path' in the context menu of remote file
 
 2022.01.09
 - fix: command to activate FTP panel must force focusing the panel
