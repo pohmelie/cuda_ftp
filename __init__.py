@@ -941,10 +941,10 @@ class Command:
             
             self.goto_server_path(get_filedir_(ret[0]))
             
-            prop_list = tree_proc(self.tree, TREE_ITEM_ENUM_EX, self.selected) or []
+            prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, self.selected) or []
             for prop in prop_list:
-                if prop['text'] == get_filename_(ret[0]):
-                    node = prop['id']
+                if prop[1] == get_filename_(ret[0]):
+                    node = prop[0]
                     tree_proc(self.tree, TREE_ITEM_SELECT, node)
                     tree_proc(self.tree, TREE_ITEM_SHOW, node)
             
