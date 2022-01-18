@@ -33,8 +33,11 @@ except ImportError:
 from cudatext import *
 import cudatext_cmd
 
+from cudax_lib import get_translation
+_ = get_translation(__file__)  # I18N
+
 # Create panel in the bottom for logging
-TITLE_LOG = "FTP Log"
+TITLE_LOG = _("FTP Log")
 handle_log = 0
 
 def init_log():
@@ -86,7 +89,7 @@ def server_password(server, can_input=True):
         if s:
             return s
 
-        s = dlg_password('CudaText', 'Password for {}:'.format(title))
+        s = dlg_password('CudaText', _('Password for {}:').format(title))
         if not s:
             raise Exception('Password input cancelled')
         pass_inputs[title] = s
@@ -300,7 +303,7 @@ class SFTP:
                     break
                 except paramiko.ssh_exception.PasswordRequiredException:
                     title = "sftp://{}@{}:{}".format(username, self.address, self.port)
-                    res = dlg_password(title, "Enter private key passphrase:")
+                    res = dlg_password(title, _("Enter private key passphrase:"))
                     if res:
                         i -= 1 # repeat same PKeyType
                         pkeys_pass[pkey_path] = res
@@ -406,7 +409,7 @@ def CommonClient(server):
     if schema == "sftp":
         if paramiko is None:
             msg_box(
-                "Please install 'Paramiko' library for SFTP support",
+                _("Please install 'Paramiko' library for SFTP support"),
                 MB_OK | MB_ICONERROR,
             )
         client = SFTP()
@@ -458,33 +461,35 @@ class Command:
 
     actions = {
         None: (
-            "New server",
+            # patch for translations (fm), see also generate_context_menu()
+            #  name,                action_name
+            (_("New server"),       "new_server"),
         ),
         NODE_SERVER: (
-            "New server...",
-            "Edit server...",
-            "Rename server...",
-            "Go to dir...",
-            "Go to file...",
-            "New file...",
-            "New dir...",
-            "Upload here...",
-            "Refresh",
-            "Remove server",
+            (_("New server..."),    "new_server"),
+            (_("Edit server..."),   "edit_server"),
+            (_("Rename server..."), "rename_server"),
+            (_("Go to dir..."),     "go_to_dir"),
+            (_("Go to file..."),    "go_to_file"),
+            (_("New file..."),      "new_file"),
+            (_("New dir..."),       "new_dir"),
+            (_("Upload here..."),   "upload_here"),
+            (_("Refresh"),          "refresh"),
+            (_("Remove server"),    "remove_server"),
         ),
         NODE_DIR: (
-            "New file...",
-            "New dir...",
-            "Upload here...",
-            "Remove dir",
-            "Copy path",
-            "Refresh",
+            (_("New file..."),      "new_file"),
+            (_("New dir..."),       "new_dir"),
+            (_("Upload here..."),   "upload_here"),
+            (_("Remove dir"),       "remove_dir"),
+            (_("Copy path"),        "copy_path"),
+            (_("Refresh"),          "refresh"),
         ),
         NODE_FILE: (
-            "Open file",
-            "Remove file",
-            "Get properties",
-            "Copy path",
+            (_("Open file"),        "open_file"),
+            (_("Remove file"),      "remove_file"),
+            (_("Get properties"),   "get_properties"),
+            (_("Copy path"),        "copy_path"),
         ),
     }
 
@@ -569,13 +574,13 @@ class Command:
             self.init_panel()
             self.init_options()
         menu_items = [server_alias(server) for server in self.options["servers"]]
-        res = dlg_menu(DMENU_LIST, menu_items, caption='Connect to server')
+        res = dlg_menu(DMENU_LIST, menu_items, caption=_('Connect to server'))
         if res is None:
             return
         self.connect_by_caption(menu_items[res])
 
     def connect_by_caption(self, item_chosen):
-        msg_status('Connect to: '+item_chosen, True)
+        msg_status(_('Connect to: ')+item_chosen, True)
         self.show_panel(True)
         # find panel item for item_chosen
         items = tree_proc(self.tree, TREE_ITEM_ENUM, 0)
@@ -600,7 +605,7 @@ class Command:
                 self.connect_by_caption(server_alias(server))
                 return
         else:
-            msg_status('Cannot find server with label "{}"'.format(label))
+            msg_status(_('Cannot find server with label "{}"').format(label))
 
     def connect_label_1(self):
         self.connect_label('1')
@@ -643,8 +648,8 @@ class Command:
         else:
             i = None
 
-        for name in self.actions[i]:
-            action_name = name.lower().replace(" ", "_").rstrip(".")
+        # patch for translations (fm)
+        for name, action_name in self.actions[i]:
             menu_proc(self.h_menu, MENU_ADD, command="cuda_ftp.action_" + action_name, caption=name)
 
     def store_file(self, server, server_path, client_path):
@@ -679,14 +684,14 @@ class Command:
 
         try:
             item,data = res[:2]
-        except TypeEror:
+        except TypeError:
             raise Exception('Login failed!')
 
         r_remote_cert = data
         sha1_fp = get_fingerprint("sha1", r_remote_cert)
         fingerprints = "[MD5]: {}\n[SHA1]: {}".format(get_fingerprint("md5", r_remote_cert), sha1_fp)
         if item == SFTP.CONFIRM_FIRST_CONNECTION_CERT:
-            msg = "First connection to this host.\nAccept host's certificate?\n\n"+fingerprints
+            msg = _("First connection to this host.\nAccept host's certificate?\n\n")+fingerprints
             res = msg_box(msg, MB_OKCANCEL | MB_ICONQUESTION)
             if res == ID_OK:
                 server["remote_cert_fingerprint"] = sha1_fp
@@ -698,7 +703,7 @@ class Command:
                 raise Exception('Login canceled! Did not accept host server\'s certificate.')
 
         elif item == SFTP.NEW_REMOTE_CERT_WARN:
-            msg = "Host's certificate changed! Proceed?\n\n"+fingerprints
+            msg = _("Host's certificate changed! Proceed?\n\n")+fingerprints
             res = msg_box(msg, MB_OKCANCEL | MB_ICONWARNING)
             if res == ID_OK:
                 server["remote_cert_fingerprint"] = sha1_fp
@@ -724,7 +729,7 @@ class Command:
             SMOOTH_SIZE_KBYTES = 30
             if (progress-progress_prev) // 1024 > TEST_ESC_EACH_KBYTES:
                 msg_status(
-                    "Downloading '{}': {} Kbytes".format(
+                    _("Downloading '{}': {} Kbytes").format(
                         server_path.name,
                         # rounding by N kb: divide, then multiply
                         progress // 1024 // SMOOTH_SIZE_KBYTES * SMOOTH_SIZE_KBYTES,
@@ -881,7 +886,9 @@ class Command:
         self.save_options()
         
     def action_rename_server(self):
-        server, *_ = self.get_location_by_index(self.selected)
+        # server, *_ = self.get_location_by_index(self.selected)
+        # Mind the _(gettext) messages! (fm)
+        server, *xx = self.get_location_by_index(self.selected)
         
         alias = server_alias(server)
         aliases = self.list_aliases()
@@ -889,9 +896,9 @@ class Command:
         
         prev = None
         while True:
-            prompt = 'Rename server: {}'.format(alias)
+            prompt = _('Rename server: {}').format(alias)
             if prev:
-                prompt += '\nName taken: {}'.format(prev)
+                prompt += _('\nName taken: {}').format(prev)
             res = dlg_input(prompt,  prev or alias)
 
             if res is None:
@@ -918,8 +925,8 @@ class Command:
     def action_go_to_dir(self):
         ret = dlg_input_ex(
             1,
-            "Go to path",
-            "Path:", "/",
+            _("Go to path"),
+            _("Path:"), "/",
         )
         if ret:
             self.goto_server_path(ret[0])
@@ -1000,8 +1007,8 @@ class Command:
             self.selected)
         file_info = dlg_input_ex(
             1,
-            "FTP new file",
-            "File name:", "",
+            _("FTP new file"),
+            _("File name:"), "",
         )
         if not file_info:
             return
@@ -1033,7 +1040,7 @@ class Command:
             client.delete(str(server_path))
 
     def action_remove_file(self):
-        res = msg_box("Do you really want to remove file?", MB_YESNO+MB_ICONQUESTION)
+        res = msg_box(_("Do you really want to remove file?"), MB_YESNO+MB_ICONQUESTION)
         if res == ID_YES:
             try:
                 self.remove_file(*self.get_location_by_index(self.selected))
@@ -1051,8 +1058,8 @@ class Command:
             self.selected)
         dir_info = dlg_input_ex(
             1,
-            "FTP new directory",
-            "Directory name:", "",
+            _("FTP new directory"),
+            _("Directory name:"), "",
         )
         if not dir_info:
             return
@@ -1076,18 +1083,18 @@ class Command:
 
         for name, facts in tuple(client.mlsd(path, server_use_list(server))):
             if facts["type"] == "dir":
-                msg_status("Removing ftp dir: " + str(path / name), True)
+                msg_status(_("Removing ftp dir: ") + str(path / name), True)
                 self.remove_directory_recursive(client, path / name)
             elif facts["type"] == "file":
-                msg_status("Removing ftp file: " + str(path / name), True)
+                msg_status(_("Removing ftp file: ") + str(path / name), True)
                 client.delete(str(path / name))
-        msg_status("Removing ftp dir: " + str(path), True)
+        msg_status(_("Removing ftp dir: ") + str(path), True)
         client.rmd(str(path))
 
     def action_remove_dir(self):
         app_proc(PROC_SET_ESCAPE, "0")
         server, server_path, _ = self.get_location_by_index(self.selected)
-        res = msg_box("Do you really want to remove directory?", MB_YESNO+MB_ICONQUESTION)
+        res = msg_box(_("Do you really want to remove directory?"), MB_YESNO+MB_ICONQUESTION)
         if res == ID_YES:
             try:
                 with CommonClient(server) as client:
@@ -1127,16 +1134,16 @@ class Command:
             today_ = datetime.now().strftime("%d.%m.%Y")
             date_ = datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%d.%m.%Y")
             if (date_ == today_):
-                res_ = 'today ' + datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%H:%M:%S")
+                res_ = _('today ') + datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%H:%M:%S")
             else:
                 res_ = datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%d.%m.%Y %H:%M:%S")
             return res_
         
         def output_file_info(dat_):
             res_ = ''
-            res_ += 'Size: ' + convert_size(dat_["size"]) + "\n\n"
-            res_ += 'Modification: ' + get_datetime(dat_["modify"]) + "\n\n"
-            res_ += 'Permissions: '+ dat_["unix.mode"]
+            res_ += _('Size: ') + convert_size(dat_["size"]) + "\n\n"
+            res_ += _('Modification: ') + get_datetime(dat_["modify"]) + "\n\n"
+            res_ += _('Permissions: ')+ dat_["unix.mode"]
             return res_
 
         server, server_path, _ = self.get_location_by_index(self.selected)
