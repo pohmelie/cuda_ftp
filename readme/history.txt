@@ -1,6 +1,7 @@
 
 2022.01.18
-+ add: i18n, patches from Markus
++ add: items 'Go to dir' and 'Go to file' in the context menu of server (patches by @ildarkhasanshin)
++ add: i18n (patches from Markus)
 
 2022.01.15 (patches by @ildarkhasanshin)
 + add: pseudo-icons in the log for download, upload, remove

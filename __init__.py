@@ -925,8 +925,9 @@ class Command:
     def action_go_to_dir(self):
         ret = dlg_input_ex(
             1,
-            _("Go to path"),
-            _("Path:"), "/",
+            _("Go to directory"),
+            _("Path:"), 
+            "/",
         )
         if ret:
             self.goto_server_path(ret[0])
@@ -934,8 +935,9 @@ class Command:
     def action_go_to_file(self):
         ret = dlg_input_ex(
             1,
-            "Go to file",
-            "Path:", "/index.php",
+            _("Go to file"),
+            _("Path:"),
+            "/index.php",
         )
         if ret:
             def get_filedir_(dat_):
