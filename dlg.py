@@ -39,8 +39,8 @@ def dialog_server_props(s_type, s_host, s_port,
         fn = dlg_file(is_open=True, init_filename='', init_dir=path, filters='', caption=caption)
         if fn:
             if Misc.is_puttygen_key(fn):
-                msg = 'You chose a private key in the PuTTYgen format,\nwhich is not supported.\n' + \
-                            'You need to convert it to the OpenSSH format first.\nPuTTYgen can accomplish that.'
+                msg = _('You chose a private key in the PuTTYgen format,\nwhich is not supported.\n'
+                        'You need to convert it to the OpenSSH format first.\nPuTTYgen can accomplish that.')
                 res = msg_box(msg, MB_OK | MB_ICONWARNING)
             dlg_proc(h, DLG_CTL_PROP_SET, name='pkey', prop={'val': fn})
         
@@ -99,7 +99,7 @@ def dialog_server_props(s_type, s_host, s_port,
     })     
     
     # type
-    name = 'type_lable'
+    name = 'type_label'
     n = dlg_proc(h, DLG_CTL_ADD, 'label')
     dlg_proc(h, DLG_CTL_PROP_SET, index=n, prop={
                 **label_defaults,
@@ -382,7 +382,7 @@ def dialog_server_props(s_type, s_host, s_port,
                 'p': 'misc_group',
                 'a_l': ('', '['), 
                 'a_t': (prev_name,']'),
-                'cap': _('Lable (for menu): '), 
+                'cap': _('Label (for menu): '), 
     })
     prev_name,name = name, 'menu_ind'
     n = dlg_proc(h, DLG_CTL_ADD, 'spinedit')
@@ -428,7 +428,7 @@ def dialog_server_props(s_type, s_host, s_port,
                 'w_min': round(60*scale),
                 'sp_a': round(6*scale),
                 'autosize': True,
-                'cap': 'OK',  
+                'cap': _('OK'),  
                 'on_change': m_ok,
     })
                     
@@ -526,7 +526,7 @@ def dlg_password(title, label):
                 'a_r': ('', ']'),
                 'a_b': ('',']'),
                 'autosize': True,
-                'cap': '&OK',  
+                'cap': _('&OK'),  
                 'on_change': m_ok,
     })
                     
