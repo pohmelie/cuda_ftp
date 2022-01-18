@@ -469,7 +469,8 @@ class Command:
             (_("New server..."),    "new_server"),
             (_("Edit server..."),   "edit_server"),
             (_("Rename server..."), "rename_server"),
-            (_("Go to..."),         "go_to"),
+            (_("Go to dir..."),     "go_to_dir"),
+            (_("Go to file..."),    "go_to_file"),
             (_("New file..."),      "new_file"),
             (_("New dir..."),       "new_dir"),
             (_("Upload here..."),   "upload_here"),
@@ -921,7 +922,7 @@ class Command:
         servers.pop(servers.index(server))
         self.save_options()
 
-    def action_go_to(self):
+    def action_go_to_dir(self):
         ret = dlg_input_ex(
             1,
             _("Go to path"),
@@ -929,6 +930,34 @@ class Command:
         )
         if ret:
             self.goto_server_path(ret[0])
+            
+    def action_go_to_file(self):
+        ret = dlg_input_ex(
+            1,
+            "Go to file",
+            "Path:", "/index.php",
+        )
+        if ret:
+            def get_filedir_(dat_):
+                tmp = str(dat_).split("/")
+                tmp.pop()
+                return "/".join(tmp) + "/"
+                
+            def get_filename_(dat_):
+                return (str(dat_).split("/"))[-1]
+            
+            self.goto_server_path(get_filedir_(ret[0]))
+            
+            prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, self.selected) or []
+            for prop in prop_list:
+                if prop[1] == get_filename_(ret[0]):
+                    node = prop[0]
+                    tree_proc(self.tree, TREE_ITEM_SELECT, node)
+                    tree_proc(self.tree, TREE_ITEM_SHOW, node)
+            
+            info = self.get_info(self.selected)
+            if info.image == NODE_FILE:
+                self.action_open_file()
 
     def goto_server_path(self, goto):
         path = PurePosixPath(goto)
