@@ -217,12 +217,15 @@ class SFTP:
     CONFIRM_FIRST_CONNECTION_CERT = 'pkey_first_conn'
     NEW_REMOTE_CERT_WARN = 'pkey_remote_cert_changed'
 
-    PK_TYPES = [
-        paramiko.rsakey.RSAKey,
-        paramiko.ed25519key.Ed25519Key,
-        paramiko.ecdsakey.ECDSAKey,
-        paramiko.dsskey.DSSKey,
-    ]
+    if paramiko:
+        PK_TYPES = [
+            paramiko.rsakey.RSAKey,
+            paramiko.ed25519key.Ed25519Key,
+            paramiko.ecdsakey.ECDSAKey,
+            paramiko.dsskey.DSSKey,
+        ]
+    else:
+        raise Exception('Paramiko is not installed')
 
     def connect(self, address, port, timeout=None):
         self.address = address
