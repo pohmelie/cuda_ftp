@@ -1,4 +1,7 @@
 
+2022.02.01
+- fix: fixed bugs because of "_" temp variable names + "_" i18n function
+
 2022.01.18
 + add: items 'Go to dir' and 'Go to file' in the context menu of server (patches by @ildarkhasanshin)
 + add: i18n (patches from Markus)
