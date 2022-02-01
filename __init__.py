@@ -355,7 +355,7 @@ def parse_list_line(b, encoding="utf-8"):
         info["type"] = "unknown"
 
     s = s[10:].lstrip()
-    for _ in range(4):
+    for xx in range(4):
         i = s.index(" ")
         s = s[i:].lstrip()
     s = s[12:].strip()
@@ -395,10 +395,10 @@ class FTP_:
             lines = []
             self.retrlines(cmd, lines.append)
             for line in lines:
-                facts_found, _, name = line.rstrip(CRLF).partition(' ')
+                facts_found, _x, name = line.rstrip(CRLF).partition(' ')
                 entry = {}
                 for fact in facts_found[:-1].split(";"):
-                    key, _, value = fact.partition("=")
+                    key, _xx, value = fact.partition("=")
                     entry[key.lower()] = value
                 yield (name, entry)
 
@@ -805,11 +805,11 @@ class Command:
 
     def node_remove_children(self, node_index):
         children = tree_proc(self.tree, TREE_ITEM_ENUM, node_index)
-        for index, _ in (children or []):
+        for index, _x in (children or []):
             tree_proc(self.tree, TREE_ITEM_DELETE, index)
 
     def node_refresh(self, node_index):
-        server, server_path, _ = self.get_location_by_index(node_index)
+        server, server_path, _x = self.get_location_by_index(node_index)
         try:
             with CommonClient(server) as client:
                 self.login(client, server)
@@ -874,7 +874,7 @@ class Command:
         tree_proc(self.tree, TREE_ITEM_ADD, 0, -1, caption, 0)
 
     def action_edit_server(self):
-        server, *_ = self.get_location_by_index(self.selected)
+        server, *_x = self.get_location_by_index(self.selected)
         server_info = dialog_server(server)
         if server_info is None:
             return
@@ -890,7 +890,7 @@ class Command:
         self.save_options()
         
     def action_rename_server(self):
-        # server, *_ = self.get_location_by_index(self.selected)
+        # server, *_x = self.get_location_by_index(self.selected)
         # Mind the _(gettext) messages! (fm)
         server, *xx = self.get_location_by_index(self.selected)
         
@@ -920,7 +920,7 @@ class Command:
         
 
     def action_remove_server(self):
-        server, *_ = self.get_location_by_index(self.selected)
+        server, *_x = self.get_location_by_index(self.selected)
         tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
         servers = self.options["servers"]
         servers.pop(servers.index(server))
@@ -1050,7 +1050,7 @@ class Command:
         if res == ID_YES:
             try:
                 self.remove_file(*self.get_location_by_index(self.selected))
-                server, server_path, _ = self.get_location_by_index(self.selected)
+                server, server_path, _x = self.get_location_by_index(self.selected)
                 show_log("[×] Removed", server_address(server) + str(server_path))
                 index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
                 self.refresh_node(index)
@@ -1099,7 +1099,7 @@ class Command:
 
     def action_remove_dir(self):
         app_proc(PROC_SET_ESCAPE, "0")
-        server, server_path, _ = self.get_location_by_index(self.selected)
+        server, server_path, _x = self.get_location_by_index(self.selected)
         res = msg_box(_("Do you really want to remove directory?"), MB_YESNO+MB_ICONQUESTION)
         if res == ID_YES:
             try:
@@ -1152,7 +1152,7 @@ class Command:
             res_ += _('Permissions: ')+ dat_["unix.mode"]
             return res_
 
-        server, server_path, _ = self.get_location_by_index(self.selected)
+        server, server_path, _x = self.get_location_by_index(self.selected)
         
         def get_filedir(dat_):
             tmp = str(dat_).split("/")
@@ -1177,7 +1177,7 @@ class Command:
         msg_box(output_file_info(dat_), MB_OK+MB_ICONINFO)
         
     def action_copy_path(self):
-        server, server_path, _ = self.get_location_by_index(self.selected)
+        server, server_path, _x = self.get_location_by_index(self.selected)
         app_proc(PROC_SET_CLIP, server_path)
 
     def save_options(self):
