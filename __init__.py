@@ -1147,12 +1147,18 @@ class Command:
         
         def output_file_info(dat_):
             res_ = ''
-            if (dat_.get("size") != None):
-                res_ += _('Size: ') + convert_size(dat_["size"]) + "\n\n"
-            if (dat_.get("modify") != None):
-                res_ += _('Modification: ') + get_datetime(dat_["modify"]) + "\n\n"
-            if (dat_.get("unix.mode") != None):
-                res_ += _('Permissions: ')+ dat_["unix.mode"]
+            keys_ = ["size", "modify", "unix.mode"]
+            outs_ = []
+            for key_ in keys_:
+                if dat_.get(key_) is not None:
+                    outs_.append(key_)
+            for out_ in outs_:
+                if (out_ == keys_[0]):
+                    res_ += _('Size: ') + convert_size(dat_["size"]) + "\n\n"
+                if (out_ == keys_[1]):
+                    res_ += _('Modification: ') + get_datetime(dat_["modify"]) + "\n\n"
+                if (out_ == keys_[2]):
+                    res_ += _('Permissions: ')+ dat_["unix.mode"]
             return res_
 
         server, server_path, _x = self.get_location_by_index(self.selected)
