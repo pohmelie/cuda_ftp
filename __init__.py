@@ -924,11 +924,13 @@ class Command:
         
 
     def action_remove_server(self):
-        server, *_x = self.get_location_by_index(self.selected)
-        tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
-        servers = self.options["servers"]
-        servers.pop(servers.index(server))
-        self.save_options()
+        res = msg_box(_("Do you really want to remove server?"), MB_YESNO+MB_ICONQUESTION)
+        if res == ID_YES:
+            server, *_x = self.get_location_by_index(self.selected)
+            tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
+            servers = self.options["servers"]
+            servers.pop(servers.index(server))
+            self.save_options()
 
     def action_go_to_dir(self):
         ret = dlg_input_ex(
