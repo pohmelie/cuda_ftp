@@ -22,6 +22,7 @@ For dirs (after opening server by double-clicking or "refresh"):
 For files:
  - open file (download and open in editor)
  - remove file
+ - opening history
 
 General notes
 -------------
@@ -57,4 +58,5 @@ Authors
   Nikita Melentev, https://github.com/pohmelie/
   Alexey Torgashin (CudaText)
   Shovel, https://github.com/halfbrained/
+  ildar r. khasanshin, https://github.com/ildarkhasanshin
 License: MIT
