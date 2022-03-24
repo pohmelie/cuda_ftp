@@ -973,7 +973,7 @@ class Command:
         info = self.get_info(self.selected)
         if info.image == NODE_FILE:
             self.action_open_file()
-            self.save_to_history()
+            self.save_to_history(False)
             
     def get_server_alias_path(self):
         server, *xx = self.get_location_by_index(self.selected)
@@ -991,9 +991,11 @@ class Command:
         
         return data_load_
     
-    def save_to_history(self):
+    def save_to_history(self, path_):
         alias_, filename__ = self.get_server_alias_path()
         filename_ = str(filename__[0])
+        if path_:
+            filename_ = path_
         datetime_ = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         data_2_ = {
             'filename': filename_,
@@ -1073,6 +1075,8 @@ class Command:
                 return
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, self.selected)
         tree_proc(self.tree, TREE_ITEM_SELECT, node)
+        
+        self.save_to_history(goto)
 
     def refresh_node(self, index):
         self.node_remove_children(index)
@@ -1292,7 +1296,7 @@ class Command:
             self.action_refresh()
         elif info.image == NODE_FILE:
             self.action_open_file()
-            self.save_to_history()
+            self.save_to_history(False)
 
     def form_on_key(self, id_dlg, id_ctl, data='', info=''):
         #Space or Enter pressed
