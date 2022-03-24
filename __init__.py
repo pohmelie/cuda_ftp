@@ -473,13 +473,17 @@ class Command:
             (_("New server..."),    "new_server"),
             (_("Edit server..."),   "edit_server"),
             (_("Rename server..."), "rename_server"),
+            (_("Remove server"),    "remove_server"),
+            ("-",                   ""),
             (_("Go to dir..."),     "go_to_dir"),
             (_("Go to file..."),    "go_to_file"),
+            (_("History..."),       "go_to_history"),
+            ("-",                   ""),
             (_("New file..."),      "new_file"),
             (_("New dir..."),       "new_dir"),
             (_("Upload here..."),   "upload_here"),
+            ("-",                   ""),
             (_("Refresh"),          "refresh"),
-            (_("Remove server"),    "remove_server"),
         ),
         NODE_DIR: (
             (_("New file..."),      "new_file"),
@@ -920,11 +924,13 @@ class Command:
         
 
     def action_remove_server(self):
-        server, *_x = self.get_location_by_index(self.selected)
-        tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
-        servers = self.options["servers"]
-        servers.pop(servers.index(server))
-        self.save_options()
+        res = msg_box(_("Do you really want to remove server?"), MB_YESNO+MB_ICONQUESTION)
+        if res == ID_YES:
+            server, *_x = self.get_location_by_index(self.selected)
+            tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
+            servers = self.options["servers"]
+            servers.pop(servers.index(server))
+            self.save_options()
 
     def action_go_to_dir(self):
         ret = dlg_input_ex(
@@ -944,26 +950,105 @@ class Command:
             "/index.php",
         )
         if ret:
-            def get_filedir_(dat_):
-                tmp = str(dat_).split("/")
-                tmp.pop()
-                return "/".join(tmp) + "/"
+            self.go_to_file_(ret[0])
                 
-            def get_filename_(dat_):
-                return (str(dat_).split("/"))[-1]
+    def go_to_file_(self, path_):
+        def get_filedir_(dat_):
+            tmp = str(dat_).split("/")
+            tmp.pop()
+            return "/".join(tmp) + "/"
             
-            self.goto_server_path(get_filedir_(ret[0]))
+        def get_filename_(dat_):
+            return (str(dat_).split("/"))[-1]
+        
+        self.goto_server_path(get_filedir_(path_))
+        
+        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, self.selected) or []
+        for prop in prop_list:
+            if prop[1] == get_filename_(path_):
+                node = prop[0]
+                tree_proc(self.tree, TREE_ITEM_SELECT, node)
+                tree_proc(self.tree, TREE_ITEM_SHOW, node)
+        
+        info = self.get_info(self.selected)
+        if info.image == NODE_FILE:
+            self.action_open_file()
+            self.save_to_history()
             
-            prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, self.selected) or []
-            for prop in prop_list:
-                if prop[1] == get_filename_(ret[0]):
-                    node = prop[0]
-                    tree_proc(self.tree, TREE_ITEM_SELECT, node)
-                    tree_proc(self.tree, TREE_ITEM_SHOW, node)
+    def get_server_alias_path(self):
+        server, *xx = self.get_location_by_index(self.selected)
+        
+        return server_alias(server), xx
+    
+    def load_from_history(self):
+        settings_dir = Path(app_path(APP_DIR_SETTINGS))
+        self.history_filename = settings_dir / "cuda_ftp_history.json"
+        
+        data_load_ = ''
+        if self.history_filename.exists():
+            with self.history_filename.open(encoding="utf-8") as fin:
+                data_load_ = json.load(fin)
+        
+        return data_load_
+    
+    def save_to_history(self):
+        alias_, filename__ = self.get_server_alias_path()
+        filename_ = str(filename__[0])
+        datetime_ = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        data_2_ = {
+            'filename': filename_,
+            'datetime': datetime_,
+        }
+        data_1_ = {
+            alias_: [
+                data_2_
+            ]
+        }
+        
+        data_load_ = self.load_from_history()
+        if data_load_:
+            if data_load_.get(alias_) is not None:
+                filenames = []
+                for el in data_load_[alias_]:
+                    filenames.append(el['filename'])
+                if filename_ not in filenames:
+                    data_load_[alias_].append(data_2_)
+                else:
+                    data_load_[alias_].pop(filenames.index(filename_))
+                    data_load_[alias_].append(data_2_)
+            else:
+                d_ = data_load_.copy()
+                d_.update(data_1_)
+                data_load_ = d_
+            data__ = data_load_
+        else:
+            data__ = data_1_
+        
+        with self.history_filename.open(mode="w", encoding="utf-8") as fout:
+            json.dump(data__, fout, indent=2)
+    
+    def action_go_to_history(self):
+        data_load_ = self.load_from_history()
+        err = False
+        if data_load_:
+            items_ = ''
+            items = []
+            alias_, filename__ = self.get_server_alias_path()
+            if alias_ in data_load_:
+                data_load_[alias_].reverse()
+                for el in data_load_[alias_]:
+                    items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"  
+                    items.append(el['filename'])
+                res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, 'History', CLIP_RIGHT)
+                if res_ is not None:
+                    self.go_to_file_(items[res_])
+            else:
+                err = True
+        else:
+            err = True
             
-            info = self.get_info(self.selected)
-            if info.image == NODE_FILE:
-                self.action_open_file()
+        if err:
+            msg_box('No history found', MB_OK)
 
     def goto_server_path(self, goto):
         path = PurePosixPath(goto)
@@ -1207,6 +1292,7 @@ class Command:
             self.action_refresh()
         elif info.image == NODE_FILE:
             self.action_open_file()
+            self.save_to_history()
 
     def form_on_key(self, id_dlg, id_ctl, data='', info=''):
         #Space or Enter pressed

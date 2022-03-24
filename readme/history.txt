@@ -1,3 +1,5 @@
+2022.03.23
++ add: context menu has new item "History" (patch by @ildarkhasanshin)
 
 2022.02.20
 - fix: error in pathlib.py when using on Python 3.10

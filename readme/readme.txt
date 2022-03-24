@@ -22,6 +22,7 @@ For dirs (after opening server by double-clicking or "refresh"):
 For files:
  - open file (download and open in editor)
  - remove file
+ - opening history
 
 General notes
 -------------
