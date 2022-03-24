@@ -58,5 +58,4 @@ Authors
   Nikita Melentev, https://github.com/pohmelie/
   Alexey Torgashin (CudaText)
   Shovel, https://github.com/halfbrained/
-  ildar r. khasanshin, https://github.com/ildarkhasanshin
 License: MIT

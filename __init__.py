@@ -986,18 +986,15 @@ class Command:
         
         data_load_ = ''
         if self.history_filename.exists():
-            with self.history_filename.open() as fin:
+            with self.history_filename.open(encoding="utf-8") as fin:
                 data_load_ = json.load(fin)
         
         return data_load_
     
     def save_to_history(self):
-        data_load_ = self.load_from_history()
         alias_, filename__ = self.get_server_alias_path()
-        #
         filename_ = str(filename__[0])
         datetime_ = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        #
         data_2_ = {
             'filename': filename_,
             'datetime': datetime_,
@@ -1007,7 +1004,9 @@ class Command:
                 data_2_
             ]
         }
-        if (data_load_ != ''):
+        
+        data_load_ = self.load_from_history()
+        if data_load_:
             if data_load_.get(alias_) is not None:
                 filenames = []
                 for el in data_load_[alias_]:
@@ -1024,23 +1023,31 @@ class Command:
             data__ = data_load_
         else:
             data__ = data_1_
-        #
-        with self.history_filename.open(mode="w") as fout:
+        
+        with self.history_filename.open(mode="w", encoding="utf-8") as fout:
             json.dump(data__, fout, indent=2)
     
     def action_go_to_history(self):
         data_load_ = self.load_from_history()
-        alias_, filename__ = self.get_server_alias_path()
-        #
-        items_ = ''
-        items = []
-        data_load_[alias_].reverse()
-        for el in data_load_[alias_]:
-            items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"  
-            items.append(el['filename'])
-        res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, 'History', CLIP_RIGHT)
-        if res_ is not None:
-            self.go_to_file_(items[res_])
+        if data_load_:
+            items_ = ''
+            items = []
+            alias_, filename__ = self.get_server_alias_path()
+            if alias_ in data_load_:
+                data_load_[alias_].reverse()
+                for el in data_load_[alias_]:
+                    items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"  
+                    items.append(el['filename'])
+                res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, 'History', CLIP_RIGHT)
+                if res_ is not None:
+                    self.go_to_file_(items[res_])
+            else:
+                err = True
+        else:
+            err = True
+            
+        if err:
+            msg_box('No history found', MB_OK)
 
     def goto_server_path(self, goto):
         path = PurePosixPath(goto)
