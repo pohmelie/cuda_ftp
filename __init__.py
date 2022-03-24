@@ -1039,7 +1039,7 @@ class Command:
                 for el in data_load_[alias_]:
                     items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"  
                     items.append(el['filename'])
-                res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, 'History', CLIP_RIGHT)
+                res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, _('History'), CLIP_RIGHT)
                 if res_ is not None:
                     self.go_to_file_(items[res_])
             else:
@@ -1048,7 +1048,7 @@ class Command:
             err = True
             
         if err:
-            msg_box('No history found', MB_OK)
+            msg_box(_('No history found'), MB_OK)
 
     def goto_server_path(self, goto):
         path = PurePosixPath(goto)
