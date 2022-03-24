@@ -1029,6 +1029,7 @@ class Command:
     
     def action_go_to_history(self):
         data_load_ = self.load_from_history()
+        err = False
         if data_load_:
             items_ = ''
             items = []
