@@ -1043,10 +1043,10 @@ class Command:
                     items.append(el['filename'])
                 w_ = 600
                 h_ = 300
-                window_coord = app_proc(PROC_COORD_WINDOW_GET, 0)
-                if window_coord:
-                    w_ = round(window_coord[2] / 3)
-                    h_ = round(window_coord[3] / 4)
+                screen_sizes = app_proc(PROC_COORD_MONITOR, 0)
+                if screen_sizes:
+                    w_ = round(screen_sizes[2] / 3)
+                    h_ = round(screen_sizes[3] / 4)
                 res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, _('History'), CLIP_LEFT, w_, h_)
                 if res_ is not None:
                     self.go_to_file_(items[res_])
