@@ -1041,7 +1041,13 @@ class Command:
                 for el in data_load_[alias_]:
                     items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"  
                     items.append(el['filename'])
-                res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, _('History'), CLIP_RIGHT)
+                w_ = 600
+                h_ = 300
+                window_coord = app_proc(PROC_COORD_WINDOW_GET, 0)
+                if window_coord:
+                    w_ = round(window_coord[2] / 3)
+                    h_ = round(window_coord[3] / 4)
+                res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, _('History'), CLIP_LEFT, w_, h_)
                 if res_ is not None:
                     self.go_to_file_(items[res_])
             else:

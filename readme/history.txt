@@ -1,3 +1,6 @@
+2022.03.26
++ add: calculating size of history-window depending on cudatext (patch by @ildarkhasanshin)
+
 2022.03.23
 + add: context menu has new item "History" (patch by @ildarkhasanshin)
 
