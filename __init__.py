@@ -141,11 +141,11 @@ def server_remote_cert_fp(server):
 
 def server_use_list(server):
     return server.get("use_list", False)
-    
+
 
 def server_alias(server):
     return server.get('alias')
-    
+
 
 def server_title(server):
     return "{}://{}:{}@{}".format(
@@ -159,7 +159,7 @@ def server_title(server):
 def server_alias_candidates(server):
     title = server_title(server)
     yield title
-    yield from ('{} {}'.format(title, i) for i in range(2, 2**30))    
+    yield from ('{} {}'.format(title, i) for i in range(2, 2**30))
 
 
 def dialog_server(init_server=None):
@@ -508,7 +508,7 @@ class Command:
         if self.options_filename.exists():
             with self.options_filename.open() as fin:
                 self.options = json.load(fin)
-                
+
         # give aliases if missing
         aliases = self.list_aliases()
         found_repeated = set()
@@ -524,11 +524,11 @@ class Command:
                 else: # already have this alias
                     server['alias'] = next(al for al in server_alias_candidates(server)  if al not in aliases)
                     aliases.append(alias)
-                    
+
         # fill tree
         for server in self.options["servers"]:
             self.action_new_server(server)
-            
+
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_dir_path = Path(self.temp_dir.name)
 
@@ -765,16 +765,16 @@ class Command:
             if server_alias(server) == alias:
                 return server
         raise Exception("No server with alias '{}'".format(alias))
-        
+
     def get_server_by_short_info(self, address, login):
         # print('Finding server:', address+'@'+login)
         for server in self.options["servers"]:
-            key = (server_type(server) + "://" + server_address(server) + ":" + server_port(server), 
+            key = (server_type(server) + "://" + server_address(server) + ":" + server_port(server),
                         server_login(server) )
             if key == (address, login):
                 return server
         raise Exception("Server {}@{} has no full info".format(address, login))
-        
+
 
     def get_location_by_index(self, index):
         path = []
@@ -783,9 +783,9 @@ class Command:
             index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, index)['parent']
         path.reverse()
         server_path = PurePosixPath("/" + str.join("/", path))
-        
+
         server = self.get_server_by_alias(self.get_info(index).caption)
-        
+
         prefix = pathlib.Path(
             server_type(server),
             server_address(server),
@@ -863,14 +863,14 @@ class Command:
             server_info = dialog_server()
             if server_info is None:
                 return
-            
+
             # give alias
             alias = server_title(server_info)
             aliases = self.list_aliases()
             if alias in aliases:
                 alias = next(al for al in server_alias_candidates(server_info)  if al not in aliases)
             server_info['alias'] = alias
-                
+
             self.options["servers"].append(server_info)
             self.save_options()
             server = server_info
@@ -882,26 +882,26 @@ class Command:
         server_info = dialog_server(server)
         if server_info is None:
             return
-        
+
         server_info['alias'] = server_alias(server)
         servers = self.options["servers"]
         i = servers.index(server)
         servers[i] = server_info
         server = server_info
-        
+
         caption = server_alias(server)
         tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
         self.save_options()
-        
+
     def action_rename_server(self):
         # server, *_x = self.get_location_by_index(self.selected)
         # Mind the _(gettext) messages! (fm)
         server, *xx = self.get_location_by_index(self.selected)
-        
+
         alias = server_alias(server)
         aliases = self.list_aliases()
         aliases.remove(alias)
-        
+
         prev = None
         while True:
             prompt = _('Rename server: {}').format(alias)
@@ -917,11 +917,11 @@ class Command:
                 server['alias'] = res
                 break
             prev = res
-        
+
         caption = server_alias(server)
         tree_proc(self.tree, TREE_ITEM_SET_TEXT, self.selected, 0, caption)
         self.save_options()
-        
+
 
     def action_remove_server(self):
         res = msg_box(_("Do you really want to remove server?"), MB_YESNO+MB_ICONQUESTION)
@@ -936,12 +936,12 @@ class Command:
         ret = dlg_input_ex(
             1,
             _("Go to directory"),
-            _("Path:"), 
+            _("Path:"),
             "/",
         )
         if ret:
             self.goto_server_path(ret[0])
-            
+
     def action_go_to_file(self):
         ret = dlg_input_ex(
             1,
@@ -951,51 +951,54 @@ class Command:
         )
         if ret:
             self.go_to_file_(ret[0])
-                
+
     def go_to_file_(self, path_):
         def get_filedir_(dat_):
             tmp = str(dat_).split("/")
             tmp.pop()
             return "/".join(tmp) + "/"
-            
+
         def get_filename_(dat_):
             return (str(dat_).split("/"))[-1]
-        
+
         self.goto_server_path(get_filedir_(path_))
-        
+
         prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, self.selected) or []
         for prop in prop_list:
             if prop[1] == get_filename_(path_):
                 node = prop[0]
                 tree_proc(self.tree, TREE_ITEM_SELECT, node)
                 tree_proc(self.tree, TREE_ITEM_SHOW, node)
-        
+
         info = self.get_info(self.selected)
         if info.image == NODE_FILE:
             self.action_open_file()
             self.save_to_history(False)
-            
+
     def get_server_alias_path(self):
         server, *xx = self.get_location_by_index(self.selected)
-        
+
         return server_alias(server), xx
-    
+
     def load_from_history(self):
         settings_dir = Path(app_path(APP_DIR_SETTINGS))
         self.history_filename = settings_dir / "cuda_ftp_history.json"
-        
+
         data_load_ = ''
         if self.history_filename.exists():
             with self.history_filename.open(encoding="utf-8") as fin:
                 data_load_ = json.load(fin)
-        
+
         return data_load_
-    
+
     def save_to_history(self, path_):
         alias_, filename__ = self.get_server_alias_path()
         filename_ = str(filename__[0])
-        if path_:
+        if (path_ and path_ != '/'):
             filename_ = path_
+        if filename_ == '/':
+            return
+
         datetime_ = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         data_2_ = {
             'filename': filename_,
@@ -1006,7 +1009,7 @@ class Command:
                 data_2_
             ]
         }
-        
+
         data_load_ = self.load_from_history()
         if data_load_:
             if data_load_.get(alias_) is not None:
@@ -1025,10 +1028,10 @@ class Command:
             data__ = data_load_
         else:
             data__ = data_1_
-        
+
         with self.history_filename.open(mode="w", encoding="utf-8") as fout:
             json.dump(data__, fout, indent=2)
-    
+
     def action_go_to_history(self):
         data_load_ = self.load_from_history()
         err = False
@@ -1039,14 +1042,14 @@ class Command:
             if alias_ in data_load_:
                 data_load_[alias_].reverse()
                 for el in data_load_[alias_]:
-                    items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"  
+                    items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"
                     items.append(el['filename'])
                 w_ = 600
-                h_ = 300
+                h_ = 600
                 screen_sizes = app_proc(PROC_COORD_MONITOR, 0)
                 if screen_sizes:
                     w_ = round(screen_sizes[2] / 3)
-                    h_ = round(screen_sizes[3] / 4)
+                    h_ = round(screen_sizes[3] / 3)
                 res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, _('History'), CLIP_LEFT, w_, h_)
                 if res_ is not None:
                     self.go_to_file_(items[res_])
@@ -1054,7 +1057,7 @@ class Command:
                 err = True
         else:
             err = True
-            
+
         if err:
             msg_box(_('No history found'), MB_OK)
 
@@ -1081,7 +1084,7 @@ class Command:
                 return
         tree_proc(self.tree, TREE_ITEM_UNFOLD_DEEP, self.selected)
         tree_proc(self.tree, TREE_ITEM_SELECT, node)
-        
+
         self.save_to_history(goto)
 
     def refresh_node(self, index):
@@ -1219,7 +1222,7 @@ class Command:
             show_log("Download file", str(ex))
             if SHOW_EX:
                 raise
-                
+
     def action_get_properties(self):
         def convert_size(size_bytes):
             size_bytes = int(size_bytes)
@@ -1230,7 +1233,7 @@ class Command:
             p = math.pow(1024, i)
             s = round(size_bytes / p, 2)
             return str("%s %s" % (s, size_name[i]))
-           
+
         def get_datetime(dat_):
             today_ = datetime.now().strftime("%d.%m.%Y")
             date_ = datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%d.%m.%Y")
@@ -1239,7 +1242,7 @@ class Command:
             else:
                 res_ = datetime.strptime(dat_, "%Y%m%d%H%M%S").strftime("%d.%m.%Y %H:%M:%S")
             return res_
-        
+
         def output_file_info(dat_):
             res_ = ''
             keys_ = ["size", "modify", "unix.mode"]
@@ -1257,29 +1260,29 @@ class Command:
             return res_
 
         server, server_path, _x = self.get_location_by_index(self.selected)
-        
+
         def get_filedir(dat_):
             tmp = str(dat_).split("/")
             tmp.pop()
             return "/".join(tmp) + "/"
-            
+
         server_path_ = get_filedir(server_path)
-        
+
         with CommonClient(server) as client:
             self.login(client, server)
             path_list = sorted(
                     client.mlsd(server_path_, server_use_list(server)),
                     key=lambda p: (p[1]["type"], p[0])
                 )
-        
+
         dat_ = ""
         for name, facts in path_list:
             name_ = str(server_path_ + name)
             if (name_ == str(server_path)):
                 dat_ = facts
-            
+
         msg_box(output_file_info(dat_), MB_OK+MB_ICONINFO)
-        
+
     def action_copy_path(self):
         server, server_path, _x = self.get_location_by_index(self.selected)
         app_proc(PROC_SET_CLIP, server_path)
