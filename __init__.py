@@ -1308,8 +1308,9 @@ class Command:
             self.save_to_history(False)
 
     def form_on_key(self, id_dlg, id_ctl, data='', info=''):
-        #Space or Enter pressed
-        if ((id_ctl==0x20 or id_ctl==0x0D) and data==''):
+        #Space, Enter or F4 pressed
+        openfile_keys = [0x20, 0x0D, 0x73]
+        if (id_ctl in openfile_keys and data == ''):
             self.tree_on_click_dbl(id_dlg, 0, '', '')
         #Del pressed
         if (id_ctl==0x2E):
