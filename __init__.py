@@ -498,6 +498,7 @@ class Command:
             (_("Remove file"),      "remove_file"),
             (_("Get properties"),   "get_properties"),
             (_("Copy path"),        "copy_path"),
+            (_("Download file"),    "download_file"),
         ),
     }
 
@@ -1286,6 +1287,36 @@ class Command:
     def action_copy_path(self):
         server, server_path, _x = self.get_location_by_index(self.selected)
         app_proc(PROC_SET_CLIP, server_path)
+
+    def action_download_file(self):
+        server, server_path, _x = self.get_location_by_index(self.selected)
+
+        path_ = os.path.join(app_path(APP_DIR_DATA), 'ftp') + str(server_path)
+
+        def get_filedir_(dat_):
+            tmp = str(dat_).split("/")
+            tmp.pop()
+            return "/".join(tmp) + "/"
+        dir_ = get_filedir_(path_)
+
+        if (os.path.exists(dir_) == False):
+            try:
+                path__ = Path(dir_)
+                path__.mkdir(parents=True)
+            except OSError as err:
+                msg_box("OS error: {0}".format(err), MB_OK)
+                raise
+
+        f1 = open(str(_x), 'r')
+        f2 = open(path_, 'w')
+
+        write_ = f2.write(f1.read())
+        if write_ > 0:
+            msg_status(_("File downloaded to: ") + path_, True)
+            file_open(path_, options='/passive')
+
+        f1.close()
+        f2.close()
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
