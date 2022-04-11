@@ -1308,16 +1308,9 @@ class Command:
                 msg_box("OS error: {0}".format(err), MB_OK)
                 raise
 
-        self.retrieve_file(server, server_path, _x)
+        self.retrieve_file(server, server_path, Path(path_))
 
-        res = ''
-        try:
-            res = shutil.copy(str(_x), path_)
-        except IOError:
-            msg_box(IOError, MB_OK+MB_ICONERROR)
-            return
-
-        if res:
+        if os.path.exists(path_):
             msg_status(_("File downloaded to: ") + path_, True)
             file_open(path_, options='/passive')
 
