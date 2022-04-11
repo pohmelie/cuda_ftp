@@ -15,7 +15,6 @@ from .dlg import *
 import hashlib
 import base64
 import math
-import shutil
 
 #for Windows, use portable installation of Paramiko+others
 v = sys.version_info
@@ -1307,6 +1306,11 @@ class Command:
             except OSError as err:
                 msg_box("OS error: {0}".format(err), MB_OK)
                 raise
+
+        try:
+            os.remove(path_)
+        except OSError:
+            pass
 
         self.retrieve_file(server, server_path, Path(path_))
 
