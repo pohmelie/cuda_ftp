@@ -1291,12 +1291,12 @@ class Command:
     def action_download_file(self):
         server, server_path, _x = self.get_location_by_index(self.selected)
 
-        path_ = os.path.join(app_path(APP_DIR_DATA), 'ftp') + str(server_path)
+        path_ = os.path.join(os.path.expanduser('~'), 'cudatext_ftp') + str(server_path)
 
         def get_filedir_(dat_):
-            tmp = str(dat_).split("/")
+            tmp = str(dat_).split(os.sep)
             tmp.pop()
-            return "/".join(tmp) + "/"
+            return os.sep.join(tmp) + os.sep
         dir_ = get_filedir_(path_)
 
         if (os.path.exists(dir_) == False):
@@ -1306,6 +1306,8 @@ class Command:
             except OSError as err:
                 msg_box("OS error: {0}".format(err), MB_OK)
                 raise
+
+        self.retrieve_file(server, server_path, _x)
 
         f1 = open(str(_x), 'r')
         f2 = open(path_, 'w')
