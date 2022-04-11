@@ -15,6 +15,7 @@ from .dlg import *
 import hashlib
 import base64
 import math
+import shutil
 
 #for Windows, use portable installation of Paramiko+others
 v = sys.version_info
@@ -1309,16 +1310,16 @@ class Command:
 
         self.retrieve_file(server, server_path, _x)
 
-        f1 = open(str(_x), 'r')
-        f2 = open(path_, 'w')
+        res = ''
+        try:
+            res = shutil.copy(str(_x), path_)
+        except IOError:
+            msg_box(IOError, MB_OK+MB_ICONERROR)
+            return
 
-        write_ = f2.write(f1.read())
-        if write_ > 0:
+        if res:
             msg_status(_("File downloaded to: ") + path_, True)
             file_open(path_, options='/passive')
-
-        f1.close()
-        f2.close()
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
