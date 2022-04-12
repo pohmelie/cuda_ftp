@@ -380,8 +380,8 @@ class FTP_:
         if use_list:
             #show_log('Using old LIST command', str(path))
             paths = []
+            self._ftp.__class__.encoding = sys.getfilesystemencoding()
             self._ftp.retrlines("LIST {}".format(path), callback=paths.append)
-            #print(paths)
             for path in paths:
                 yield parse_list_line(path)
 
