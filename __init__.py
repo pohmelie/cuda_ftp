@@ -1124,7 +1124,7 @@ class Command:
             pass
         path = client_path / name
         path.touch()
-        file_open(str(path))
+        file_open(str(path), options='/nozip')
         server, server_path
         self.store_file(server, server_path / name, path)
         self.action_refresh()
@@ -1218,7 +1218,7 @@ class Command:
         try:
             self.retrieve_file(*path_info)
             show_log("[↓] Downloaded", server_address(server) + str(server_path))
-            file_open(str(client_path))
+            file_open(str(client_path), options='/nozip /nontext-view-hex')
         except Exception as ex:
             show_log("Download file", str(ex))
             if SHOW_EX:
@@ -1316,7 +1316,8 @@ class Command:
 
         if os.path.exists(path_):
             msg_status(_("File downloaded to: ") + path_, True)
-            file_open(path_, options='/passive')
+            show_log("[↓] Downloaded", server_address(server) + str(server_path))
+            file_open(path_, options='/passive /nozip /nontext-view-hex')
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
