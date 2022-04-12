@@ -498,6 +498,7 @@ class Command:
             (_("Remove file"),      "remove_file"),
             (_("Get properties"),   "get_properties"),
             (_("Copy path"),        "copy_path"),
+            (_("Download file"),    "download_file"),
         ),
     }
 
@@ -1286,6 +1287,36 @@ class Command:
     def action_copy_path(self):
         server, server_path, _x = self.get_location_by_index(self.selected)
         app_proc(PROC_SET_CLIP, server_path)
+
+    def action_download_file(self):
+        server, server_path, _x = self.get_location_by_index(self.selected)
+
+        path_ = os.path.join(os.path.expanduser('~'), 'cudatext_ftp') + str(server_path)
+
+        def get_filedir_(dat_):
+            tmp = str(dat_).split(os.sep)
+            tmp.pop()
+            return os.sep.join(tmp) + os.sep
+        dir_ = get_filedir_(path_)
+
+        if (os.path.exists(dir_) == False):
+            try:
+                path__ = Path(dir_)
+                path__.mkdir(parents=True)
+            except OSError as err:
+                msg_box("OS error: {0}".format(err), MB_OK)
+                raise
+
+        try:
+            os.remove(path_)
+        except OSError:
+            pass
+
+        self.retrieve_file(server, server_path, Path(path_))
+
+        if os.path.exists(path_):
+            msg_status(_("File downloaded to: ") + path_, True)
+            file_open(path_, options='/passive')
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:

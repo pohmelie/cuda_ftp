@@ -1,3 +1,5 @@
+2022.04.11
++ add: context menu has new item "Download file" (patch by @ildarkhasanshin)
 
 2022.04.04
 + add: F4 in file list opens the file in editor (patch by @ildarkhasanshin)
