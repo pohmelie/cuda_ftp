@@ -1,6 +1,6 @@
 [info]
 title=FTP
-desc=Allows to handle remote files/folders on FTP+SFTP servers. Read text file about SFTP support.
+desc=Handle remote files/folders on FTP+SFTP servers. Read additional text file, in the 'readme' subfolder, about SFTP support.
 type=cudatext-plugin
 subdir=cuda_ftp
 homepage=https://github.com/pohmelie/cuda_ftp
