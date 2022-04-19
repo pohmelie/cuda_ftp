@@ -491,6 +491,7 @@ class Command:
             (_("Upload here..."),   "upload_here"),
             (_("Remove dir"),       "remove_dir"),
             (_("Copy path"),        "copy_path"),
+            (_("Copy link"),        "copy_link"),
             (_("Refresh"),          "refresh"),
         ),
         NODE_FILE: (
@@ -498,6 +499,7 @@ class Command:
             (_("Remove file"),      "remove_file"),
             (_("Get properties"),   "get_properties"),
             (_("Copy path"),        "copy_path"),
+            (_("Copy link"),        "copy_link"),
             (_("Download file"),    "download_file"),
         ),
     }
@@ -1287,6 +1289,16 @@ class Command:
     def action_copy_path(self):
         server, server_path, _x = self.get_location_by_index(self.selected)
         app_proc(PROC_SET_CLIP, server_path)
+
+    def action_copy_link(self):
+        server, server_path, _x = self.get_location_by_index(self.selected)
+        alias, __x = self.get_server_alias_path()
+        server_path_ = str(server_path)
+        for k, v in [('www/', ''), ('public_html/', ''), ('home/', ''), (alias + '/', '')]:
+            server_path_ = server_path_.replace(k, v)
+        link = (alias  + '/' + server_path_).replace('//', '/')
+        app_proc(PROC_SET_CLIP, link)
+        msg_status(_("Link copied to clipboard: " + link), True)
 
     def action_download_file(self):
         server, server_path, _x = self.get_location_by_index(self.selected)
