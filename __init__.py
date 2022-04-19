@@ -1296,11 +1296,15 @@ class Command:
         server_path_ = str(server_path)
         ph = '/public_html/'
         w = '/www/'
-        tuple = (w + alias, ph + alias, '/' + alias + w, '/' + alias + ph, w, ph)
+        tuple = (w + alias, ph + alias, '/' + alias + w, '/' + alias + ph)
         if server_path_.startswith(tuple):
             for k in tuple:
                 server_path_ = server_path_.replace(k, '')
-        link = (alias  + '/' + server_path_).replace('//', '/').replace(ph, '/')
+        tuple2 = (w, ph)
+        if server_path_.startswith(tuple2):
+            for k in tuple2:
+                server_path_ = server_path_.replace(k, '')
+        link = (alias  + '/' + server_path_).replace(ph, '/').replace('//', '/')
         app_proc(PROC_SET_CLIP, link)
         msg_status(_("Link copied to clipboard: " + link), True)
 
