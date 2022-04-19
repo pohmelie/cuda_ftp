@@ -1294,9 +1294,13 @@ class Command:
         server, server_path, _x = self.get_location_by_index(self.selected)
         alias, __x = self.get_server_alias_path()
         server_path_ = str(server_path)
-        for k, v in [('www/', ''), ('public_html/', ''), ('home/', ''), (alias + '/', '')]:
-            server_path_ = server_path_.replace(k, v)
-        link = (alias  + '/' + server_path_).replace('//', '/')
+        ph = '/public_html/'
+        w = '/www/'
+        tuple = (w + alias, ph + alias, '/' + alias + w, '/' + alias + ph, w, ph)
+        if server_path_.startswith(tuple):
+            for k in tuple:
+                server_path_ = server_path_.replace(k, '')
+        link = (alias  + '/' + server_path_).replace('//', '/').replace(ph, '/')
         app_proc(PROC_SET_CLIP, link)
         msg_status(_("Link copied to clipboard: " + link), True)
 
