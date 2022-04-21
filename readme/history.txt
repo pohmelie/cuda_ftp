@@ -1,3 +1,7 @@
+
+2022.04.21
++ add: command "Copy link" (patch by @ildarkhasanshin)
+
 2022.04.11
 + add: context menu has new item "Download file" (patch by @ildarkhasanshin)
 
