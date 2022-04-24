@@ -974,9 +974,12 @@ class Command:
                 tree_proc(self.tree, TREE_ITEM_SHOW, node)
 
         info = self.get_info(self.selected)
-        if info.image == NODE_FILE:
-            self.action_open_file()
-            self.save_to_history(False)
+        if info.caption == get_filename_(path_):
+            if info.image == NODE_FILE:
+                self.action_open_file()
+                self.save_to_history(False)
+        else:
+            msg_status(_('Error: file not found on server!'))
 
     def get_server_alias_path(self):
         server, *xx = self.get_location_by_index(self.selected)
