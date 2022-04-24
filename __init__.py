@@ -974,9 +974,12 @@ class Command:
                 tree_proc(self.tree, TREE_ITEM_SHOW, node)
 
         info = self.get_info(self.selected)
-        if info.image == NODE_FILE:
-            self.action_open_file()
-            self.save_to_history(False)
+        if info.caption == get_filename_(path_):
+            if info.image == NODE_FILE:
+                self.action_open_file()
+                self.save_to_history(False)
+        else:
+            msg_status(_('Error: file not found on server!'))
 
     def get_server_alias_path(self):
         server, *xx = self.get_location_by_index(self.selected)
@@ -1308,13 +1311,13 @@ class Command:
         server, server_path, _x = self.get_location_by_index(self.selected)
         alias, __x = self.get_server_alias_path()
 
-        path_ = os.path.join(os.path.expanduser('~'), 'cudatext_ftp') + str(server_path)
+        path_ = os.path.join(os.path.expanduser('~'), 'cudatext_ftp') + os.sep + alias + str(server_path)
 
         def get_filedir_(dat_):
             tmp = str(dat_).split(os.sep)
             tmp.pop()
             return os.sep.join(tmp) + os.sep
-        dir_ = alias + os.sep + get_filedir_(path_)
+        dir_ = get_filedir_(path_)
 
         if (os.path.exists(dir_) == False):
             try:
