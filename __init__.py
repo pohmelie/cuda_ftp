@@ -488,19 +488,27 @@ class Command:
         NODE_DIR: (
             (_("New file..."),      "new_file"),
             (_("New dir..."),       "new_dir"),
+            ("-",                   ""),
+            (_("Remove"),           "remove_dir"),
+            (_("Rename"),           "rename_file_dir"),
             (_("Upload here..."),   "upload_here"),
-            (_("Remove dir"),       "remove_dir"),
+            ("-",                   ""),
             (_("Copy path"),        "copy_path"),
             (_("Copy link"),        "copy_link"),
+            ("-",                   ""),
             (_("Refresh"),          "refresh"),
         ),
         NODE_FILE: (
-            (_("Open file"),        "open_file"),
-            (_("Remove file"),      "remove_file"),
-            (_("Get properties"),   "get_properties"),
+            (_("Open"),             "open_file"),
+            ("-",                   ""),
+            (_("Remove..."),        "remove_file"),
+            (_("Rename..."),        "rename_file_dir"),
+            (_("Download"),         "download_file"),
+            ("-",                   ""),
             (_("Copy path"),        "copy_path"),
             (_("Copy link"),        "copy_link"),
-            (_("Download file"),    "download_file"),
+            ("-",                   ""),
+            (_("Get properties"),   "get_properties"),
         ),
     }
 
@@ -1143,7 +1151,6 @@ class Command:
         self.store_file(server, server_path / Path(os.path.basename(path)), Path(path))
         self.action_refresh()
 
-
     def remove_file(self, server, server_path, client_path):
         with CommonClient(server) as client:
             self.login(client, server)
@@ -1338,6 +1345,33 @@ class Command:
             msg_status(_("File downloaded to: ") + path_, True)
             show_log("[↓] Downloaded", server_address(server) + str(server_path))
             file_open(path_, options='/passive /nozip /nontext-view-hex')
+
+    def rename_file_dir(self, server, server_path, client_path, new_name):
+        with CommonClient(server) as client:
+            self.login(client, server)
+            client.rename(str(server_path), str(new_name))
+
+    def action_rename_file_dir(self):
+        server, server_path, _x = self.get_location_by_index(self.selected)
+        def get_filedir_(dat_):
+            tmp = str(dat_).split(os.sep)
+            tmp.pop()
+            return os.sep.join(tmp) + os.sep
+        def get_filename_(dat_):
+            return (str(dat_).split("/"))[-1]
+        res = dlg_input(_("Rename: "), get_filename_(server_path))
+        if res is None:
+            return
+        else:
+            try:
+                self.rename_file_dir(*self.get_location_by_index(self.selected), get_filedir_(server_path) + res)
+                show_log("[!] Renamed", server_address(server) + str(server_path))
+                index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
+                self.refresh_node(index)
+            except Exception as ex:
+                show_log("Rename file/dir", str(ex))
+                if SHOW_EX:
+                    raise
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
