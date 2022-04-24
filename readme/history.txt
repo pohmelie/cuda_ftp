@@ -1,3 +1,5 @@
+2022.04.24
++ add: command "Rename" for file/dir (patch by @ildarkhasanshin)
 
 2022.04.21
 + add: command "Copy link" (patch by @ildarkhasanshin)
