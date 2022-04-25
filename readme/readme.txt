@@ -53,9 +53,11 @@ SFTP support
 Read separate text-file about SFTP support.
 For SFTP, Paramiko lib must be installed (on Linux and macOS).
 
-Authors
--------
+About
+-----
+Authors:
   Nikita Melentev, https://github.com/pohmelie/
   Alexey Torgashin (CudaText)
   Shovel, https://github.com/halfbrained/
+  Ildar Khasanshin, https://github.com/ildarkhasanshin
 License: MIT
