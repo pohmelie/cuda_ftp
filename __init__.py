@@ -1141,6 +1141,7 @@ class Command:
         server, server_path
         self.store_file(server, server_path / name, path)
         self.action_refresh()
+        self.select_node(self.selected, str(path))
 
     def action_upload_here(self):
         server, server_path, client_path = self.get_location_by_index(self.selected)
@@ -1190,6 +1191,7 @@ class Command:
             if SHOW_EX:
                 raise
         self.refresh_node(self.selected)
+        self.select_node(self.selected, str(server_path / name))
 
     def remove_directory_recursive(self, client, path):
         if app_proc(PROC_GET_ESCAPE, ""):
@@ -1372,6 +1374,15 @@ class Command:
                 show_log("Rename file/dir", str(ex))
                 if SHOW_EX:
                     raise
+
+    def select_node(self, parent, path):
+        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, parent) or []
+        name = (str(path).split(os.sep))[-1]
+        for prop in prop_list:
+            if prop[1] == name:
+                tree_proc(self.tree, TREE_ITEM_SELECT, prop[0])
+                tree_proc(self.tree, TREE_ITEM_SHOW, prop[0])
+                break
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
