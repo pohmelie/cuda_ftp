@@ -1375,10 +1375,11 @@ class Command:
                 if SHOW_EX:
                     raise
 
-    def select_node(self, selected, path):
-        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, selected) or []
+    def select_node(self, parent, path):
+        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, parent) or []
+        name = (str(path).split(os.sep))[-1]
         for prop in prop_list:
-            if prop[1] == (str(path).split(os.sep))[-1]:
+            if prop[1] == name:
                 tree_proc(self.tree, TREE_ITEM_SELECT, prop[0])
                 tree_proc(self.tree, TREE_ITEM_SHOW, prop[0])
                 break
