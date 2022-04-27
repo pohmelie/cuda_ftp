@@ -980,6 +980,7 @@ class Command:
                 node = prop[0]
                 tree_proc(self.tree, TREE_ITEM_SELECT, node)
                 tree_proc(self.tree, TREE_ITEM_SHOW, node)
+                break
 
         info = self.get_info(self.selected)
         if info.caption == get_filename_(path_):
