@@ -1378,7 +1378,7 @@ class Command:
     def select_node(self, selected, path):
         prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, selected) or []
         for prop in prop_list:
-            if prop[1] == (str(path).split("/"))[-1]:
+            if prop[1] == (str(path).split(os.sep))[-1]:
                 tree_proc(self.tree, TREE_ITEM_SELECT, prop[0])
                 tree_proc(self.tree, TREE_ITEM_SHOW, prop[0])
                 break
