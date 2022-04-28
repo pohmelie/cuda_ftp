@@ -980,6 +980,7 @@ class Command:
                 node = prop[0]
                 tree_proc(self.tree, TREE_ITEM_SELECT, node)
                 tree_proc(self.tree, TREE_ITEM_SHOW, node)
+                break
 
         info = self.get_info(self.selected)
         if info.caption == get_filename_(path_):
@@ -1166,6 +1167,7 @@ class Command:
                 show_log("[×] Removed", server_address(server) + str(server_path))
                 index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
                 self.refresh_node(index)
+                self.select_node_parent(index)
             except Exception as ex:
                 show_log("Remove file", str(ex))
                 if SHOW_EX:
@@ -1220,7 +1222,10 @@ class Command:
                     self.login(client, server)
                     self.remove_directory_recursive(client, server_path)
                     show_log("[×] Removed", server_address(server) + str(server_path))
+                    index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
                     tree_proc(self.tree, TREE_ITEM_DELETE, self.selected)
+                    self.refresh_node(index)
+                    self.select_node_parent(index)
             except Exception as ex:
                 show_log("Remove dir", str(ex))
                 if SHOW_EX:
@@ -1383,6 +1388,10 @@ class Command:
                 tree_proc(self.tree, TREE_ITEM_SELECT, prop[0])
                 tree_proc(self.tree, TREE_ITEM_SHOW, prop[0])
                 break
+
+    def select_node_parent(self, parent):
+        tree_proc(self.tree, TREE_ITEM_SELECT, parent)
+        tree_proc(self.tree, TREE_ITEM_SHOW, parent)
 
     def save_options(self):
         with self.options_filename.open(mode="w") as fout:
