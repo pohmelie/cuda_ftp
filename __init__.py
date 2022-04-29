@@ -1434,3 +1434,6 @@ class Command:
             info = self.get_info(self.selected)
             if (info.image == NODE_FILE or info.image == NODE_DIR):
                 self.action_rename_file_dir()
+            if info.image == NODE_SERVER:
+                self.action_rename_server()
+
