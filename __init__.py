@@ -1425,3 +1425,6 @@ class Command:
                 self.action_remove_file()
             elif info.image == NODE_DIR:
                 self.action_remove_dir()
+        #F5 pressed
+        if (id_ctl==0x74):
+            self.action_refresh()
