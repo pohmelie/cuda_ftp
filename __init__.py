@@ -1431,4 +1431,6 @@ class Command:
             self.action_refresh()
         #F2 pressed
         if (id_ctl==0x71):
-            self.action_rename_file_dir()
+            info = self.get_info(self.selected)
+            if (info.image == NODE_FILE or info.image == NODE_DIR):
+                self.action_rename_file_dir()
