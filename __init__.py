@@ -1428,3 +1428,6 @@ class Command:
         #F5 pressed
         if (id_ctl==0x74):
             self.action_refresh()
+        #F2 pressed
+        if (id_ctl==0x71):
+            self.action_rename_file_dir()
