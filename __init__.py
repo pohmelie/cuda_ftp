@@ -12,7 +12,6 @@ from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
 from datetime import datetime
 from .dlg import *
-from cudatext_keys import *
 import hashlib
 import base64
 import math
@@ -33,6 +32,7 @@ except ImportError:
     paramiko = None
 
 from cudatext import *
+from cudatext_keys import *
 import cudatext_cmd
 
 from cudax_lib import get_translation
