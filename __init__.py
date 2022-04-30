@@ -1371,11 +1371,12 @@ class Command:
             return
         else:
             try:
-                self.rename_file_dir(*self.get_location_by_index(self.selected), get_filedir_(server_path) + res)
+                newname = get_filedir_(server_path) + res
+                self.rename_file_dir(*self.get_location_by_index(self.selected), newname)
                 show_log("[!] Renamed", server_address(server) + str(server_path))
                 index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
                 self.refresh_node(index)
-                self.select_node(index, str(get_filedir_(server_path) + res))
+                self.select_node(index, newname)
             except Exception as ex:
                 show_log("Rename file/dir", str(ex))
                 if SHOW_EX:
