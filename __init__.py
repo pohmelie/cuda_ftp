@@ -12,6 +12,7 @@ from ftplib import FTP, error_perm
 from .pathlib import Path, PurePosixPath
 from datetime import datetime
 from .dlg import *
+from cudatext_keys import *
 import hashlib
 import base64
 import math
@@ -1417,24 +1418,22 @@ class Command:
 
     def form_on_key(self, id_dlg, id_ctl, data='', info=''):
         #Space, Enter or F4 pressed
-        openfile_keys = [0x20, 0x0D, 0x73]
-        if (id_ctl in openfile_keys and data == ''):
+        if id_ctl in [VK_SPACE, VK_ENTER, VK_F4] and data == '':
             self.tree_on_click_dbl(id_dlg, 0, '', '')
         #Del pressed
-        if (id_ctl==0x2E):
+        elif id_ctl == VK_DELETE:
             info = self.get_info(self.selected)
             if info.image == NODE_FILE:
                 self.action_remove_file()
             elif info.image == NODE_DIR:
                 self.action_remove_dir()
         #F5 pressed
-        if (id_ctl==0x74):
+        elif id_ctl == VK_F5:
             self.action_refresh()
         #F2 pressed
-        if (id_ctl==0x71):
+        elif id_ctl == VK_F2:
             info = self.get_info(self.selected)
             if (info.image == NODE_FILE or info.image == NODE_DIR):
                 self.action_rename_file_dir()
             if info.image == NODE_SERVER:
                 self.action_rename_server()
-
