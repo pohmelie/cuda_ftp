@@ -1375,6 +1375,7 @@ class Command:
                 show_log("[!] Renamed", server_address(server) + str(server_path))
                 index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
                 self.refresh_node(index)
+                self.select_node(index, str(get_filedir_(server_path) + res))
             except Exception as ex:
                 show_log("Rename file/dir", str(ex))
                 if SHOW_EX:
@@ -1382,7 +1383,7 @@ class Command:
 
     def select_node(self, parent, path):
         prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, parent) or []
-        name = (str(path).split(os.sep))[-1]
+        name = (path.split(os.sep))[-1]
         for prop in prop_list:
             if prop[1] == name:
                 tree_proc(self.tree, TREE_ITEM_SELECT, prop[0])
@@ -1425,3 +1426,14 @@ class Command:
                 self.action_remove_file()
             elif info.image == NODE_DIR:
                 self.action_remove_dir()
+        #F5 pressed
+        if (id_ctl==0x74):
+            self.action_refresh()
+        #F2 pressed
+        if (id_ctl==0x71):
+            info = self.get_info(self.selected)
+            if (info.image == NODE_FILE or info.image == NODE_DIR):
+                self.action_rename_file_dir()
+            if info.image == NODE_SERVER:
+                self.action_rename_server()
+
