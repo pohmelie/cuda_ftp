@@ -1352,7 +1352,6 @@ class Command:
         if os.path.exists(path_):
             msg_status(_("File downloaded to: ") + path_, True)
             show_log("[↓] Downloaded", server_address(server) + str(server_path))
-            file_open(path_, options='/passive /nozip /nontext-view-hex')
 
     def rename_file_dir(self, server, server_path, client_path, new_name):
         with CommonClient(server) as client:
