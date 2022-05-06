@@ -1457,9 +1457,10 @@ class Command:
                 self.action_remove_file()
             elif info.image == NODE_DIR:
                 self.action_remove_dir()
-        #F5 pressed
-        elif id_ctl == VK_F5:
+        #F5 or Ctrl+R pressed
+        elif (id_ctl == VK_F5) or (data == 'c' and id_ctl == 0x52):
             self.action_refresh()
+            return False
         #F2 pressed
         elif id_ctl == VK_F2:
             info = self.get_info(self.selected)
