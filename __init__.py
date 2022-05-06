@@ -1362,10 +1362,10 @@ class Command:
             tmp = str(dat_).split(os.sep)
             tmp.pop()
             return os.sep.join(tmp) + os.sep
-        def get_filename_(dat_):
+        def get_backup_filename_(dat_):
             filename, file_extension = os.path.splitext((str(dat_).split("/"))[-1])
-            return filename + '.' + datetime.now().strftime("%y%m%d") + file_extension
-        res = dlg_input(_("Backup: "), get_filename_(server_path))
+            return filename + '.' + datetime.now().strftime("%y%m%d_%H%M%S") + file_extension
+        res = dlg_input(_("Backup: "), get_backup_filename_(server_path))
         if res is None:
             return
         else:
