@@ -1144,6 +1144,7 @@ class Command:
         self.store_file(server, server_path / name, path)
         self.action_refresh()
         self.select_node(self.selected, str(path))
+        self.save_to_history(str(server_path / name))
 
     def action_upload_here(self):
         server, server_path, client_path = self.get_location_by_index(self.selected)
@@ -1195,6 +1196,7 @@ class Command:
                 raise
         self.refresh_node(self.selected)
         self.select_node(self.selected, str(server_path / name))
+        self.save_to_history(str(server_path / name))
 
     def remove_directory_recursive(self, client, path):
         if app_proc(PROC_GET_ESCAPE, ""):
