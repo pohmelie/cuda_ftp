@@ -505,6 +505,7 @@ class Command:
             (_("Remove..."),        "remove_file"),
             (_("Rename..."),        "rename_file_dir"),
             (_("Download"),         "download_file"),
+            (_("Backup..."),        "backup_file"),
             ("-",                   ""),
             (_("Copy path"),        "copy_path"),
             (_("Copy link"),        "copy_link"),
@@ -1354,6 +1355,34 @@ class Command:
         if os.path.exists(path_):
             msg_status(_("File downloaded to: ") + path_, True)
             show_log("[↓] Downloaded", server_address(server) + str(server_path))
+
+    def action_backup_file(self):
+        server, server_path, _x = self.get_location_by_index(self.selected)
+        def get_filedir_(dat_):
+            tmp = str(dat_).split(os.sep)
+            tmp.pop()
+            return os.sep.join(tmp) + os.sep
+        def get_backup_filename_(dat_):
+            filename, file_extension = os.path.splitext((str(dat_).split("/"))[-1])
+            return filename + '.' + datetime.now().strftime("%y%m%d_%H%M%S") + file_extension
+        res = dlg_input(_("Backup: "), get_backup_filename_(server_path))
+        if res is None:
+            return
+        else:
+            try:
+                new_path_server = get_filedir_(server_path) + res
+                self.retrieve_file(server, server_path, _x)
+                new_path = get_filedir_(_x) + res
+                os.rename(str(_x), str(new_path))
+                self.store_file(server, Path(new_path_server), Path(new_path))
+                show_log("[!] Backup", server_address(server) + str(server_path) + " to " + new_path_server)
+                index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
+                self.refresh_node(index)
+                self.select_node(index, new_path_server)
+            except Exception as ex:
+                show_log("Backup file", str(ex))
+                if SHOW_EX:
+                    raise
 
     def rename_file_dir(self, server, server_path, client_path, new_name):
         with CommonClient(server) as client:
