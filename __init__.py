@@ -1121,7 +1121,13 @@ class Command:
             if goto:
                 self.goto_server_path(goto)
                 return
-        self.refresh_node(self.selected)
+        info = self.get_info(self.selected)
+        if info.image == NODE_FILE:
+            index = tree_proc(self.tree, TREE_ITEM_GET_PROPS, self.selected)['parent']
+            self.refresh_node(index)
+            self.select_node_parent(index)
+        else:
+            self.refresh_node(self.selected)
 
     def action_new_file(self):
         server, server_path, client_path = self.get_location_by_index(
