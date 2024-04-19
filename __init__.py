@@ -1068,7 +1068,7 @@ class Command:
                         pinned_.append(el['filename'])
                         index_ += 1
                 for el in data_load_[alias_]:
-                    if el.get('pinned', None) == '0':
+                    if 'pinned' not in el or el['pinned'] == '0':
                         items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"
                         items.append(el['filename'])
                 w_ = 600
