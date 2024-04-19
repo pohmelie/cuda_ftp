@@ -1062,13 +1062,13 @@ class Command:
                 data_load_[alias_].reverse()
                 index_ = 1
                 for el in data_load_[alias_]:
-                    if 'pinned' in el and el['pinned'] == '1':
+                    if el.get('pinned', None) == '1':
                         items_ = items_ + '[' + str(index_) + '] ' + el['filename'] + "\t" + el['datetime'] + "\n"
                         items.append(el['filename'])
                         pinned_.append(el['filename'])
                         index_ += 1
                 for el in data_load_[alias_]:
-                    if 'pinned' not in el or el['pinned'] == '0':
+                    if el.get('pinned', None) == '0':
                         items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"
                         items.append(el['filename'])
                 w_ = 600
