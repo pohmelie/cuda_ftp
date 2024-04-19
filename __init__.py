@@ -1080,9 +1080,9 @@ class Command:
                 res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, _('History'), CLIP_LEFT, w_, h_)
                 if res_ is not None:
                     if 'c' not in app_proc(PROC_GET_KEYSTATE, ''):
-                        self.go_to_file_(items[res_], (True if items[res_] in pinned_ else False))
+                        self.go_to_file_(items[res_], (items[res_] in pinned_))
                     else:
-                        self.save_to_history(items[res_], (False if items[res_] in pinned_ else True))
+                        self.save_to_history(items[res_], (items[res_] not in pinned_))
                         self.action_go_to_history();
             else:
                 err = True
