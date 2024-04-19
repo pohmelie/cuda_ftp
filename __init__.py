@@ -965,7 +965,7 @@ class Command:
         if ret:
             self.go_to_file_(ret[0])
 
-    def go_to_file_(self, path_, pinned_ = '0'):
+    def go_to_file_(self, path_, pinned_ = False):
         def get_filedir_(dat_):
             tmp = str(dat_).split("/")
             tmp.pop()
@@ -1008,7 +1008,7 @@ class Command:
 
         return data_load_
 
-    def save_to_history(self, path_, pinned_ = '0'):
+    def save_to_history(self, path_, pinned_ = False):
         alias_, filename__ = self.get_server_alias_path()
         filename_ = str(filename__[0])
         if (path_ and path_ != '/'):
@@ -1062,13 +1062,13 @@ class Command:
                 data_load_[alias_].reverse()
                 index_ = 1
                 for el in data_load_[alias_]:
-                    if el.get('pinned', None) == '1':
+                    if el.get('pinned', None) == True:
                         items_ = items_ + '[' + str(index_) + '] ' + el['filename'] + "\t" + el['datetime'] + "\n"
                         items.append(el['filename'])
                         pinned_.append(el['filename'])
                         index_ += 1
                 for el in data_load_[alias_]:
-                    if 'pinned' not in el or el['pinned'] == '0':
+                    if 'pinned' not in el or el['pinned'] == False:
                         items_ = items_ + el['filename'] + "\t" + el['datetime'] + "\n"
                         items.append(el['filename'])
                 w_ = 600
@@ -1080,9 +1080,9 @@ class Command:
                 res_ = dlg_menu(DMENU_LIST_ALT, items_, 0, _('History'), CLIP_LEFT, w_, h_)
                 if res_ is not None:
                     if 'c' not in app_proc(PROC_GET_KEYSTATE, ''):
-                        self.go_to_file_(items[res_], ('1' if items[res_] in pinned_ else '0'))
+                        self.go_to_file_(items[res_], (True if items[res_] in pinned_ else False))
                     else:
-                        self.save_to_history(items[res_], ('0' if items[res_] in pinned_ else '1'))
+                        self.save_to_history(items[res_], (False if items[res_] in pinned_ else True))
                         self.action_go_to_history();
             else:
                 err = True
