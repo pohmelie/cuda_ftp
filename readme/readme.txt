@@ -22,7 +22,7 @@ For dirs (after opening server by double-clicking or "refresh"):
 For files:
  - open file (download and open in editor)
  - remove file
- - opening history
+ - opening history (ctrl+enter - pin/unpin of path)
 
 General notes
 -------------
@@ -42,7 +42,7 @@ General notes
 Public key authentication
 -------------------------
 
-- Private key must be in OpenSSH format. PuTTYgen keys (.ppk) cen be converted to 
+- Private key must be in OpenSSH format. PuTTYgen keys (.ppk) cen be converted to
   supported format by PuTTYgen itself.
 - Server certificate's fingerprint is saved and you will be warned if it changes.
 - Passphrase for a private key is never saved to disk, so after CudaText restart
