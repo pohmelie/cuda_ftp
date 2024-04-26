@@ -16,8 +16,6 @@ import hashlib
 import base64
 import math
 
-download_dir_count_files_ = 0
-
 #for Windows, use portable installation of Paramiko+others
 v = sys.version_info
 v = str(v[0])+str(v[1])
@@ -1274,6 +1272,16 @@ class Command:
 
         return download_dir_count_files_
 
+    def get_download_dir_count_files(self, server, server_path):
+        count_files = 0
+        global download_dir_count_files_
+        download_dir_count_files_ = 0
+        with CommonClient(server) as client:
+            self.login(client, server)
+            count_files += self.download_dir_count_files(client, server_path)
+
+        return count_files
+
     def download_directory_recursive(self, client, path):
         if app_proc(PROC_GET_ESCAPE, ""):
             raise Exception("Stopped by user")
@@ -1296,14 +1304,9 @@ class Command:
     def action_download_dir(self):
         app_proc(PROC_SET_ESCAPE, "0")
         server, server_path, _x = self.get_location_by_index(self.selected)
-        #
-        count_files = 0
-        with CommonClient(server) as client:
-            self.login(client, server)
-            count_files += self.download_dir_count_files(client, server_path)
+        count_files = self.get_download_dir_count_files(server, server_path)
         if count_files != 0:
             count_files = ' (files: ' + str(count_files) + ')'
-        #
         res = msg_box(_("Do you really want to download directory") + count_files + "?", MB_YESNO+MB_ICONQUESTION)
         if res == ID_YES:
             try:
