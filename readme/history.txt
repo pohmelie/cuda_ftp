@@ -1,3 +1,6 @@
+2024.04.26
++ add: command "Download" for dir
+
 2024.04.18
 + add: Ctrl+Enter for pin/unpin of path in History-window
 

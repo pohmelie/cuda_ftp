@@ -16,6 +16,8 @@ import hashlib
 import base64
 import math
 
+download_dir_count_files_ = 0
+
 #for Windows, use portable installation of Paramiko+others
 v = sys.version_info
 v = str(v[0])+str(v[1])
@@ -492,6 +494,7 @@ class Command:
             ("-",                   ""),
             (_("Remove"),           "remove_dir"),
             (_("Rename"),           "rename_file_dir"),
+            (_("Download"),         "download_dir"),
             (_("Upload here..."),   "upload_here"),
             ("-",                   ""),
             (_("Copy path"),        "copy_path"),
@@ -1252,6 +1255,64 @@ class Command:
                     self.select_node_parent(index)
             except Exception as ex:
                 show_log("Remove dir", str(ex))
+                if SHOW_EX:
+                    raise
+
+    def download_dir_count_files(self, client, path):
+        if app_proc(PROC_GET_ESCAPE, ""):
+            raise Exception("Stopped by user")
+
+        server, server_path, client_path = self.get_location_by_index(
+            self.selected)
+
+        global download_dir_count_files_
+        for name, facts in tuple(client.mlsd(path, server_use_list(server))):
+            if facts["type"] == "dir":
+                self.download_dir_count_files(client, path / name)
+            elif facts["type"] == "file":
+                download_dir_count_files_ += 1
+
+        return download_dir_count_files_
+
+    def download_directory_recursive(self, client, path):
+        if app_proc(PROC_GET_ESCAPE, ""):
+            raise Exception("Stopped by user")
+
+        server, server_path, client_path = self.get_location_by_index(
+            self.selected)
+
+        for name, facts in tuple(client.mlsd(path, server_use_list(server))):
+            if facts["type"] == "dir":
+                self.download_directory_recursive(client, path / name)
+            elif facts["type"] == "file":
+                server_path = Path(server_path) / Path(str(path / name))
+                alias, __x = self.get_server_alias_path()
+                path_ = os.path.join(os.path.expanduser('~'), 'cudatext_ftp') + os.sep + alias + str(server_path)
+                self.retrieve_file(server, server_path, Path(path_))
+                if os.path.exists(path_):
+                    msg_status(_("File downloaded to: ") + path_, True)
+                    show_log("[↓] Downloaded", server_address(server) + str(server_path))
+
+    def action_download_dir(self):
+        app_proc(PROC_SET_ESCAPE, "0")
+        server, server_path, _x = self.get_location_by_index(self.selected)
+        #
+        count_files = 0
+        with CommonClient(server) as client:
+            self.login(client, server)
+            count_files += self.download_dir_count_files(client, server_path)
+        if count_files != 0:
+            count_files = ' (files: ' + str(count_files) + ')'
+        #
+        res = msg_box(_("Do you really want to download directory") + count_files + "?", MB_YESNO+MB_ICONQUESTION)
+        if res == ID_YES:
+            try:
+                with CommonClient(server) as client:
+                    self.login(client, server)
+                    self.download_directory_recursive(client, server_path)
+                    show_log("[✔] Directory download complete", server_address(server) + str(server_path))
+            except Exception as ex:
+                show_log("[!] Download dir", str(ex))
                 if SHOW_EX:
                     raise
 

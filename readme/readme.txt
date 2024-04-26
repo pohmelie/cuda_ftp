@@ -17,7 +17,12 @@ For servers:
 For dirs (after opening server by double-clicking or "refresh"):
  - new file
  - new dir
- - remove dir
+ - remove
+ - rename
+ - download
+ - upload here
+ - copy path
+ - copy link
  - refresh (re-reads dir)
 For files:
  - open file (download and open in editor)
