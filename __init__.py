@@ -604,12 +604,12 @@ class Command:
         msg_status(_('Connect to: ')+item_chosen, True)
         self.show_panel(True)
         # find panel item for item_chosen
-        items = tree_proc(self.tree, TREE_ITEM_ENUM, 0)
+        items = tree_proc(self.tree, TREE_ITEM_ENUM_EX, 0)
         if not items:
             return
         for item in items:
-            item_handle = item[0]
-            item_caption = item[1]
+            item_handle = item['id']
+            item_caption = item['text']
             if item_caption == item_chosen:
                 tree_proc(self.tree, TREE_ITEM_FOLD_DEEP, 0)
                 tree_proc(self.tree, TREE_ITEM_SELECT, item_handle)
@@ -821,9 +821,9 @@ class Command:
         return server, server_path, client_path
 
     def node_remove_children(self, node_index):
-        children = tree_proc(self.tree, TREE_ITEM_ENUM, node_index)
-        for index, _x in (children or []):
-            tree_proc(self.tree, TREE_ITEM_DELETE, index)
+        nodes = tree_proc(self.tree, TREE_ITEM_ENUM_EX, node_index)
+        for node in nodes:
+            tree_proc(self.tree, TREE_ITEM_DELETE, node['id'])
 
     def node_refresh(self, node_index):
         server, server_path, _x = self.get_location_by_index(node_index)
@@ -976,10 +976,10 @@ class Command:
 
         self.goto_server_path(get_filedir_(path_))
 
-        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, self.selected) or []
+        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM_EX, self.selected)
         for prop in prop_list:
-            if prop[1] == get_filename_(path_):
-                node = prop[0]
+            if prop['text'] == get_filename_(path_):
+                node = prop['id']
                 tree_proc(self.tree, TREE_ITEM_SELECT, node)
                 tree_proc(self.tree, TREE_ITEM_SHOW, node)
                 break
@@ -1434,12 +1434,12 @@ class Command:
                     raise
 
     def select_node(self, parent, path):
-        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM, parent) or []
+        prop_list = tree_proc(self.tree, TREE_ITEM_ENUM_EX, parent)
         name = (path.split(os.sep))[-1]
         for prop in prop_list:
-            if prop[1] == name:
-                tree_proc(self.tree, TREE_ITEM_SELECT, prop[0])
-                tree_proc(self.tree, TREE_ITEM_SHOW, prop[0])
+            if prop['text'] == name:
+                tree_proc(self.tree, TREE_ITEM_SELECT, prop['id'])
+                tree_proc(self.tree, TREE_ITEM_SHOW, prop['id'])
                 break
 
     def select_node_parent(self, parent):

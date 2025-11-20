@@ -1,3 +1,6 @@
+2025.11.20
+- fix: avoid deprecated API
+
 2024.04.18
 + add: Ctrl+Enter for pin/unpin of path in History-window
 
@@ -123,4 +126,4 @@
 + support for Win32 [Py3.3]
 
 2016.05.25
-init version
+initial version
