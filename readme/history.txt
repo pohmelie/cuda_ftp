@@ -56,7 +56,7 @@
 
 2021.03.09
 + add: 'rename' command for servers (work by @halfbrained)
-* migrated dialogs from legacy API
++ add: migrated dialogs from legacy API
 
 2021.03.06
 + add: SFTP public key authentication support (work by @halfbrained)
@@ -83,52 +83,52 @@
 - fix: avoid deleted APIs
 
 2017.09.09
-+ added usage of SFTP libs on Windows, if additional plugin "SFTP support" is installed
++ add: added usage of SFTP libs on Windows, if additional plugin "SFTP support" is installed
 
 2017.09.01
-- fix: must scale dialog for high-dpi
+- fix: must scale dialog for high-DPI
 
 2017.08.08
-+ option in server properties: "Use old LIST command"
-- avoid deprecated APIs
++ add: option in server properties: "Use old LIST command"
+- fix: avoid deprecated APIs
 
 2017.06.15
-- don't use deprecated APIs
-* moved icon files to sub-dir
+- fix: don't use deprecated APIs
+* change: moved icon files to sub-dir
 
 2017.05.05
 - fix: app blinks at left side on 1st saving of any file
 
 2017.03.28
-+ don't use deprecated app_log() API, use proc_bottompanel_ API
++ add: don't use deprecated app_log() API
 
 2017.02.03
-+ new dialog for server-info
-+ masked input for password
++ add: new dialog for server-info
++ add: masked input for password
 
 2016.06.12
-+ menuitem "Upload here" for dir/server
++ add: menu item "Upload here" for dir/server
 
 2016.06.08
-+ support for SFTP, Linux only
-+ menu item in Plugins: Menu Connect
-+ server prop: Timeout
-+ passw can be "?" to ask each time
++ add: support for SFTP, Linux only
++ add: menu item "Plugins / Menu Connect"
++ add: server property "Timeout"
++ add: password can be "?" to ask it each time
 
 2016.06.04
-+ ftp server prop "Init dir"
++ add: ftp server: property "Initial dir"
 
 2016.06.02
-+ statusbar progress on downld, Esc key
-+ commd "Go to" for server
++ add: statusbar progress on download, Esc key
++ add: command "Go to" for server
 
 2016.05.31
-+ ftp errors will show in output-pane now
-+ status msg on deleting big dirs, Esc key
-* changed fmt of opt-file
++ add: ftp errors will show in the Output-panel now
++ add: status msg on deleting big dirs, Esc key
+* change: changed format of config-file
 
 2016.05.26
-+ support for Win32 [Py3.3]
++ add: support for Windows (Python 3.3)
 
 2016.05.25
 initial version
